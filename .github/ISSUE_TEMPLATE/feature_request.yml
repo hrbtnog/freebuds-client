@@ -1,0 +1,44 @@
+name: Sugestão ou ideia
+description: Tem uma ideia de melhoria, texto, layout ou teste?
+title: "[Ideia]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Não precisa saber programar para sugerir. Ideias de uso, instalação mais
+        fácil, acessibilidade, tradução e melhorias de layout são bem-vindas.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Qual é a ideia?
+      description: Descreva a sugestão.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Por que isso ajudaria?
+      description: Conte o problema ou a situação que você imagina.
+
+  - type: input
+    id: model
+    attributes:
+      label: Modelo do fone (opcional)
+      placeholder: "Ex.: FreeBuds Pro 5"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas ou contexto (opcional)
+
+  - type: checkboxes
+    id: availability
+    attributes:
+      label: Disponibilidade
+      options:
+        - label: Eu poderia testar essa ideia no meu fone.
+        - label: Eu poderia ajudar com documentação ou texto.
+        - label: Eu poderia ajudar com código.

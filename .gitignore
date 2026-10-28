@@ -1,0 +1,29 @@
+# Python / ambiente local
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Materiais pessoais de referência (não versionar)
+# Inclui capturas de tela com nomes de dispositivos e dados do dia a dia.
+referenciasvisuais/
+captures/
+settings.json
+tmp_*
+*.log
+*.btsnoop
+*.hci
+.env
+
+# Editores e sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

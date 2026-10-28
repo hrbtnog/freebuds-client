@@ -1,0 +1,68 @@
+name: Relatar um problema
+description: Algo não funcionou como esperado? Conte o que aconteceu.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por testar e relatar! Este é um projeto pessoal, sem suporte
+        oficial. Quanto mais contexto, mais fácil ajudar.
+
+        **Não inclua endereço Bluetooth completo, serial, capturas HCI ou nomes
+        de dispositivos.** Se precisar mostrar um log, redija esses dados.
+
+  - type: input
+    id: model
+    attributes:
+      label: Modelo do fone
+      placeholder: "Ex.: FreeBuds Pro 5"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware
+    attributes:
+      label: Firmware
+      description: Versão exibida no app oficial, se souber.
+      placeholder: "Ex.: HarmonyOS 7.0.0.350"
+
+  - type: input
+    id: windows
+    attributes:
+      label: Versão do Windows
+      placeholder: "Ex.: Windows 11 24H2"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: O que você fez?
+      description: Passos para reproduzir o problema.
+      placeholder: "1. Abri o app...\n2. Conectei o fone...\n3. Cliquei em..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que você esperava?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: O que aconteceu?
+      description: Inclua a mensagem de erro ou o trecho do log, sem dados pessoais.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacidade
+      options:
+        - label: Não incluí endereço Bluetooth completo, serial ou capturas com dados pessoais.
+          required: true
