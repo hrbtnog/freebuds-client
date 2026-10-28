@@ -64,6 +64,7 @@ from .icons import (
     make_chevron_icon,
     make_noise_icon,
 )
+from .i18n import option_label, t
 from .svg_icons import feature_pixmap, make_spatial_icon
 from .theme import (
     ACCENT,
@@ -112,8 +113,8 @@ def _level_color(level: int | None) -> str:
     return _LEVEL_COLORS["low"]
 
 
-def _value_text(value: str | None) -> str:
-    return value if value else "—"
+def _value_text(value: str | None, fallback: str = "—") -> str:
+    return value if value else fallback
 
 
 def make_section_label(text: str) -> QLabel:
@@ -569,14 +570,14 @@ class BatteryCard(QWidget):
 
         self.title_label = QLabel(title)
         self.title_label.setObjectName("small")
-        self.value_label = QLabel("—")
+        self.value_label = QLabel(t("common.none"))
         self.value_label.setObjectName("strongValue")
         self.bar = QProgressBar()
         self.bar.setRange(0, 100)
         self.bar.setValue(0)
         self.bar.setTextVisible(False)
         self.bar.setFixedHeight(4)
-        self.status_label = QLabel("Sem dados")
+        self.status_label = QLabel(t("battery.no_data"))
         self.status_label.setObjectName("tiny")
 
         layout.addWidget(self.title_label)
@@ -586,13 +587,13 @@ class BatteryCard(QWidget):
 
     def set_level(self, level: int | None, *, charging: bool | None = None) -> None:
         if level is None:
-            self.value_label.setText("—")
+            self.value_label.setText(t("common.none"))
             self.value_label.setStyleSheet(f"color: {TEXT_TERTIARY};")
             self.bar.setValue(0)
             self.bar.setStyleSheet(
                 "QProgressBar::chunk { background-color: #3A3A42; border-radius: 2px; }"
             )
-            self.status_label.setText("Sem dados")
+            self.status_label.setText(t("battery.no_data"))
             self.status_label.setStyleSheet(f"color: {TEXT_TERTIARY};")
             return
 
@@ -605,13 +606,13 @@ class BatteryCard(QWidget):
             f"QProgressBar::chunk {{ background-color: {color}; border-radius: 2px; }}"
         )
         if charging is True:
-            self.status_label.setText("Carregando")
+            self.status_label.setText(t("battery.status_charging"))
             self.status_label.setStyleSheet(f"color: {YELLOW};")
         elif normalized <= 20:
-            self.status_label.setText("Bateria baixa")
+            self.status_label.setText(t("battery.status_low"))
             self.status_label.setStyleSheet(f"color: {RED};")
         else:
-            self.status_label.setText("Bateria")
+            self.status_label.setText(t("battery.status_ok"))
             self.status_label.setStyleSheet(f"color: {TEXT_TERTIARY};")
 
 
@@ -628,9 +629,9 @@ class BatteryOverview(QFrame):
 
         header = QHBoxLayout()
         header.setSpacing(10)
-        title = QLabel("Bateria")
+        title = QLabel(t("battery.title"))
         title.setObjectName("cardTitle")
-        self.charging_label = QLabel("Carregando")
+        self.charging_label = QLabel(t("battery.charging"))
         self.charging_label.setObjectName("chargingBadge")
         self.charging_label.hide()
         header.addWidget(title)
@@ -640,10 +641,10 @@ class BatteryOverview(QFrame):
 
         metrics = QHBoxLayout()
         metrics.setSpacing(18)
-        self.global_card = BatteryCard("Global")
-        self.left_card = BatteryCard("Fone esquerdo")
-        self.right_card = BatteryCard("Fone direito")
-        self.case_card = BatteryCard("Estojo")
+        self.global_card = BatteryCard(t("battery.global"))
+        self.left_card = BatteryCard(t("battery.left"))
+        self.right_card = BatteryCard(t("battery.right"))
+        self.case_card = BatteryCard(t("battery.case"))
         for index, card in enumerate(
             (self.global_card, self.left_card, self.right_card, self.case_card)
         ):
@@ -654,9 +655,9 @@ class BatteryOverview(QFrame):
 
         footer = QHBoxLayout()
         footer.setSpacing(8)
-        self.flags_label = QLabel("Flags de carga: —")
+        self.flags_label = QLabel(t("battery.flags_none"))
         self.flags_label.setObjectName("tiny")
-        self.raw_label = QLabel("Leitura 0x0108")
+        self.raw_label = QLabel(t("battery.read"))
         self.raw_label.setObjectName("tiny")
         footer.addWidget(self.flags_label)
         footer.addStretch(1)
@@ -669,7 +670,7 @@ class BatteryOverview(QFrame):
             self.left_card.set_level(None)
             self.right_card.set_level(None)
             self.case_card.set_level(None)
-            self.flags_label.setText("Flags de carga: —")
+            self.flags_label.setText(t("battery.flags_none"))
             self.charging_label.hide()
             return
 
@@ -681,9 +682,9 @@ class BatteryOverview(QFrame):
 
         if battery.charging_flags is not None:
             flags = battery.charging_flags.hex(" ").upper()
-            self.flags_label.setText(f"Flags de carga: {flags}")
+            self.flags_label.setText(t("battery.flags", flags=flags))
         else:
-            self.flags_label.setText("Flags de carga: —")
+            self.flags_label.setText(t("battery.flags_none"))
         self.charging_label.setVisible(is_charging)
 
 
@@ -709,14 +710,14 @@ class AncPanel(QFrame):
         header.setSpacing(10)
         heading = QVBoxLayout()
         heading.setSpacing(3)
-        title = QLabel("Controle de ruído")
+        title = QLabel(t("anc.title"))
         title.setObjectName("cardTitle")
         heading.addWidget(title)
         header.addLayout(heading)
         header.addStretch(1)
 
         # Apenas informa o modo em uso; não é um atalho para o adaptável.
-        self.current_link = QLabel("Sem conexão")
+        self.current_link = QLabel(t("anc.no_connection"))
         self.current_link.setObjectName("cardSubtitle")
         self.current_link.setAlignment(
             Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
@@ -725,11 +726,11 @@ class AncPanel(QFrame):
         layout.addLayout(header)
 
         # Rótulos internos preservados para a suíte de testes e diagnóstico.
-        self.mode_label = QLabel("Sem dados")
+        self.mode_label = QLabel(t("anc.no_data"))
         self.mode_label.setObjectName("cardTitle")
-        self.level_label = QLabel("Nível: —")
+        self.level_label = QLabel(t("anc.level_label", level=t("common.none")))
         self.level_label.setObjectName("muted")
-        self.raw_label = QLabel("Bruto: —")
+        self.raw_label = QLabel(t("anc.raw", value=t("common.none")))
         self.raw_label.setObjectName("tiny")
         self.mode_label.hide()
         self.level_label.hide()
@@ -745,9 +746,19 @@ class AncPanel(QFrame):
 
         self.mode_buttons: dict[int, QToolButton] = {}
         mode_specs = (
-            (0, "Desativado", "Modo desativado", "off"),
-            (1, "Cancelamento", "Cancelamento de ruído", "cancellation"),
-            (2, "Transparência", "Sensibilidade ao ambiente", "awareness"),
+            (0, t("anc.segment_off"), t("anc.tooltip_off"), "off"),
+            (
+                1,
+                t("anc.segment_cancellation"),
+                t("anc.tooltip_cancellation"),
+                "cancellation",
+            ),
+            (
+                2,
+                t("anc.segment_awareness"),
+                t("anc.tooltip_awareness"),
+                "awareness",
+            ),
         )
         for code, text, tooltip, icon_kind in mode_specs:
             button = QToolButton()
@@ -775,8 +786,13 @@ class AncPanel(QFrame):
             self.cancellation_levels,
             cancellation_buttons,
         ) = self._make_level_row(
-            "Nível",
-            ((1, "Conforto"), (0, "Padrão"), (2, "Ultra"), (3, "Dinâmico")),
+            t("anc.level"),
+            (
+                (1, t("anc.level_comfort")),
+                (0, t("anc.level_standard")),
+                (2, t("anc.level_ultra")),
+                (3, t("anc.level_dynamic")),
+            ),
             mode_code=1,
         )
         self.level_buttons: dict[tuple[int, int], QPushButton] = {}
@@ -786,13 +802,16 @@ class AncPanel(QFrame):
             self.awareness_levels,
             awareness_buttons,
         ) = self._make_level_row(
-            "Nível",
-            ((1, "Realce de voz"), (2, "Normal")),
+            t("anc.level"),
+            (
+                (1, t("anc.level_voice_boost")),
+                (2, t("anc.level_normal")),
+            ),
             mode_code=2,
         )
         self.level_buttons.update(awareness_buttons)
 
-        self.adaptive_chip_shortcut = QPushButton("Adaptável")
+        self.adaptive_chip_shortcut = QPushButton(t("anc.adaptive_chip"))
         self.adaptive_chip_shortcut.setObjectName("levelChip")
         self.adaptive_chip_shortcut.setCheckable(True)
         self.adaptive_chip_shortcut.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -816,11 +835,11 @@ class AncPanel(QFrame):
 
         adaptive_header = QHBoxLayout()
         adaptive_header.setSpacing(8)
-        adaptive_title = QLabel("Intensidade do reconhecimento adaptável")
+        adaptive_title = QLabel(t("anc.adaptive_title"))
         adaptive_title.setObjectName("small")
         adaptive_header.addWidget(adaptive_title)
         adaptive_header.addStretch(1)
-        self.adaptive_value_label = QLabel("—")
+        self.adaptive_value_label = QLabel(t("common.none"))
         self.adaptive_value_label.setObjectName("adaptiveValue")
         adaptive_header.addWidget(self.adaptive_value_label)
         adaptive_layout.addLayout(adaptive_header)
@@ -831,9 +850,7 @@ class AncPanel(QFrame):
         self.adaptive_slider.setSingleStep(1)
         self.adaptive_slider.setPageStep(1)
         self.adaptive_slider.setTracking(True)
-        self.adaptive_slider.setToolTip(
-            "1 = mais ruído; 6 = padrão; 11 = menos ruído."
-        )
+        self.adaptive_slider.setToolTip(t("anc.slider_tooltip_short"))
         self.adaptive_slider.valueChanged.connect(
             self._on_adaptive_slider_changed
         )
@@ -844,11 +861,11 @@ class AncPanel(QFrame):
 
         adaptive_hints = QHBoxLayout()
         adaptive_hints.setSpacing(8)
-        noisy = QLabel("Mais ruído")
+        noisy = QLabel(t("anc.more_noise"))
         noisy.setObjectName("tiny")
-        default = QLabel("Padrão")
+        default = QLabel(t("anc.adaptive_default"))
         default.setObjectName("tiny")
-        quiet = QLabel("Menos ruído")
+        quiet = QLabel(t("anc.less_noise"))
         quiet.setObjectName("tiny")
         quiet.setAlignment(Qt.AlignmentFlag.AlignRight)
         adaptive_hints.addWidget(noisy)
@@ -951,11 +968,21 @@ class AncPanel(QFrame):
         self._emit_adaptive_level()
 
     def _update_adaptive_value(self, value: int) -> None:
-        suffix = " · padrão" if value == _ADAPTIVE_DEFAULT else ""
-        self.adaptive_value_label.setText(f"{value} de {_ADAPTIVE_LEVELS}{suffix}")
+        if value == _ADAPTIVE_DEFAULT:
+            text = t(
+                "anc.adaptive_value_default",
+                value=value,
+                total=_ADAPTIVE_LEVELS,
+            )
+        else:
+            text = t("anc.adaptive_value", value=value, total=_ADAPTIVE_LEVELS)
+        self.adaptive_value_label.setText(text)
         self.adaptive_slider.setToolTip(
-            f"Nível {value} de {_ADAPTIVE_LEVELS}: "
-            "1 = mais ruído; 6 = padrão; 11 = menos ruído."
+            t(
+                "anc.slider_tooltip",
+                value=value,
+                total=_ADAPTIVE_LEVELS,
+            )
         )
 
     def _emit_adaptive_level(self) -> None:
@@ -978,53 +1005,63 @@ class AncPanel(QFrame):
         self._adaptive_raw = None
 
         if anc is None:
-            self.mode_label.setText("Sem dados")
-            self.level_label.setText("Nível: —")
-            self.adaptive_value_label.setText("—")
-            self.raw_label.setText("Bruto: —")
-            self.current_link.setText("Sem conexão")
+            self.mode_label.setText(t("anc.no_data"))
+            self.level_label.setText(
+                t("anc.level_label", level=t("common.none"))
+            )
+            self.adaptive_value_label.setText(t("common.none"))
+            self.raw_label.setText(t("anc.raw", value=t("common.none")))
+            self.current_link.setText(t("anc.no_connection"))
             return
 
         adaptive = anc.mode_code == 2 and anc.level_code == 4
         mode = anc.mode
         if adaptive:
-            mode_text = "Reconhecimento adaptável"
+            mode_text = t("anc.mode_adaptive")
         elif mode in _ANC_MODE_LABELS:
-            mode_text = _ANC_MODE_LABELS[mode]
+            mode_text = option_label("anc_mode", mode, _ANC_MODE_LABELS[mode])
         elif anc.mode_code is not None:
-            mode_text = f"Modo {anc.mode_code}"
+            mode_text = t("anc.mode_unknown_prefix", code=anc.mode_code)
         else:
-            mode_text = "Desconhecido"
+            mode_text = t("anc.mode_unknown")
         self.mode_label.setText(mode_text)
 
         if adaptive:
             if anc.adaptive_level is None:
-                level_text = "—"
+                level_text = t("common.none")
             else:
                 value = anc.adaptive_level + 1
-                suffix = " · padrão" if value == _ADAPTIVE_DEFAULT else ""
-                level_text = f"{value} de {_ADAPTIVE_LEVELS}{suffix}"
-            subtitle = f"Reconhecimento adaptável · nível {level_text}"
+                key = (
+                    "anc.adaptive_value_default"
+                    if value == _ADAPTIVE_DEFAULT
+                    else "anc.adaptive_value"
+                )
+                level_text = t(key, value=value, total=_ADAPTIVE_LEVELS)
+            subtitle = t("anc.subtitle_adaptive", level=level_text)
         elif anc.level in _ANC_LEVEL_LABELS:
-            level_text = _ANC_LEVEL_LABELS[anc.level]
-            subtitle = f"{mode_text} · {level_text}"
+            level_text = option_label(
+                "anc_level", anc.level, _ANC_LEVEL_LABELS[anc.level]
+            )
+            subtitle = t(
+                "anc.subtitle_mode_level", mode=mode_text, level=level_text
+            )
         elif anc.mode == "normal":
-            level_text = "—"
-            subtitle = "Desativado"
+            level_text = t("common.none")
+            subtitle = t("anc.subtitle_off")
         elif anc.level_code is not None:
-            level_text = f"código {anc.level_code} (não mapeado)"
-            subtitle = f"{mode_text} · nível não mapeado"
+            level_text = t("anc.level_code_unmapped", code=anc.level_code)
+            subtitle = t("anc.subtitle_unmapped", mode=mode_text)
         else:
-            level_text = "—"
+            level_text = t("common.none")
             subtitle = mode_text
-        self.level_label.setText(f"Nível: {level_text}")
+        self.level_label.setText(t("anc.level_label", level=level_text))
         self.current_link.setText(subtitle)
 
         if adaptive:
             self.adaptive_chip_shortcut.setChecked(True)
             self.adaptive_controls.show()
             if anc.adaptive_level is None:
-                self.adaptive_value_label.setText("—")
+                self.adaptive_value_label.setText(t("common.none"))
                 self.adaptive_slider.setEnabled(False)
             else:
                 self._adaptive_raw = anc.adaptive_level
@@ -1055,13 +1092,16 @@ class AncPanel(QFrame):
             and not adaptive
         ):
             self.unknown_level_label.setText(
-                f"O fone está no nível {anc.level_code}, ainda não mapeado. "
-                "Esse nível é preservado, mas não pode ser selecionado aqui."
+                t("anc.unknown_level", code=anc.level_code)
             )
             self.unknown_level_label.show()
 
         raw = anc.parameters.get(1)
-        self.raw_label.setText(f"Bruto: {raw.hex(' ').upper()}" if raw else "Bruto: —")
+        self.raw_label.setText(
+            t("anc.raw", value=raw.hex(" ").upper())
+            if raw
+            else t("anc.raw", value=t("common.none"))
+        )
         self._sync_height()
 
     def showEvent(self, event: object) -> None:
@@ -1312,9 +1352,9 @@ class FeaturesPanel(QFrame):
         self.tabs.setObjectName("featureTabs")
         self.tabs.setDocumentMode(True)
         self.tabs.tabBar().hide()
-        self.tabs.addTab(self._build_audio_tab(), "Áudio")
-        self.tabs.addTab(self._build_gestures_tab(), "Gestos")
-        self.tabs.addTab(self._build_connection_tab(), "Conexão")
+        self.tabs.addTab(self._build_audio_tab(), t("nav.audio"))
+        self.tabs.addTab(self._build_gestures_tab(), t("nav.gestures"))
+        self.tabs.addTab(self._build_connection_tab(), t("nav.connection"))
         layout.addWidget(self.tabs)
         self.set_enabled(False)
 
@@ -1331,12 +1371,22 @@ class FeaturesPanel(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(20)
 
-        sound = FeatureCard("HUAWEI SOUND", "PERFIL DE EQUALIZAÇÃO", kind="sound")
-        self.sound_profile_label = QLabel("—")
+        sound = FeatureCard(
+            t("audio.sound_title"),
+            t("audio.sound_badge"),
+            kind="sound",
+        )
+        self.sound_profile_label = QLabel(t("common.none"))
         self.sound_profile_label.setObjectName("cardTitle")
         sound.body.addWidget(self.sound_profile_label)
         self.sound_chips = ChipGroup(
-            tuple((profile, label) for profile, label in SOUND_PROFILES.items()),
+            tuple(
+                (
+                    profile,
+                    option_label("sound_profile", profile, label),
+                )
+                for profile, label in SOUND_PROFILES.items()
+            ),
             columns=3,
             span_last=True,
         )
@@ -1344,18 +1394,22 @@ class FeaturesPanel(QFrame):
             lambda value: self._emit("sound_profile", value)
         )
         sound.body.addWidget(self.sound_chips)
-        sound_hint = QLabel(
-            "Os perfis são gravados no próprio fone e valem para qualquer "
-            "dispositivo conectado."
-        )
+        sound_hint = QLabel(t("audio.sound_hint"))
         sound_hint.setObjectName("featureHint")
         sound_hint.setWordWrap(True)
         sound.body.addWidget(sound_hint)
         layout.addWidget(sound)
 
-        spatial = FeatureCard("Áudio espacial", "MODO", kind="spatial")
+        spatial = FeatureCard(
+            t("audio.spatial_title"),
+            t("audio.spatial_badge"),
+            kind="spatial",
+        )
         self.spatial_chips = ChipGroup(
-            tuple((mode, label) for mode, label in SPATIAL_MODES.items()),
+            tuple(
+                (mode, option_label("spatial_mode", mode, label))
+                for mode, label in SPATIAL_MODES.items()
+            ),
             columns=3,
             icon_provider=lambda mode: make_spatial_icon(int(mode), 30),
         )
@@ -1363,20 +1417,21 @@ class FeaturesPanel(QFrame):
             lambda value: self._emit("spatial_mode", value)
         )
         spatial.body.addWidget(self.spatial_chips)
-        self.spatial_effect_label = QLabel("Efeito: —")
+        self.spatial_effect_label = QLabel(
+            t("audio.spatial_effect", effect=t("common.none"))
+        )
         self.spatial_effect_label.setObjectName("rowSubtitle")
         spatial.body.addWidget(self.spatial_effect_label)
-        effect_hint = QLabel(
-            "O efeito (Padrão, Teatro, Cinema ou Sala) é definido no app "
-            "oficial; aqui o modo é controlado diretamente no fone."
-        )
+        effect_hint = QLabel(t("audio.spatial_hint"))
         effect_hint.setObjectName("featureHint")
         effect_hint.setWordWrap(True)
         spatial.body.addWidget(effect_hint)
         layout.addWidget(spatial)
 
         adaptive = FeatureCard(
-            "Áudio adaptável", "EM TEMPO REAL", kind="adaptive_audio"
+            t("audio.adaptive_title"),
+            t("audio.adaptive_badge"),
+            kind="adaptive_audio",
         )
         self.adaptive_volume_switch = ToggleSwitch()
         self.adaptive_volume_switch.toggled.connect(
@@ -1384,8 +1439,8 @@ class FeaturesPanel(QFrame):
         )
         adaptive.body.addWidget(
             FeatureRow(
-                "Volume adaptável",
-                "Ajusta o volume ao ambiente e à sua rotina de uso.",
+                t("audio.volume_title"),
+                t("audio.volume_subtitle"),
                 self.adaptive_volume_switch,
             )
         )
@@ -1395,8 +1450,8 @@ class FeaturesPanel(QFrame):
         )
         adaptive.body.addWidget(
             FeatureRow(
-                "Reconhecimento de conversa",
-                "Reduz o áudio quando você começa a falar e o restaura depois.",
+                t("audio.conversation_title"),
+                t("audio.conversation_subtitle"),
                 self.conversation_switch,
             )
         )
@@ -1416,9 +1471,11 @@ class FeaturesPanel(QFrame):
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 1)
 
-        press = FeatureCard("Pressione e segure", "POR LADO", kind="gestures")
-        self.press_left = self._combo(PRESS_HOLD_ACTIONS)
-        self.press_right = self._combo(PRESS_HOLD_ACTIONS)
+        press = FeatureCard(
+            t("gestures.press_title"), t("gestures.press_badge"), kind="gestures"
+        )
+        self.press_left = self._combo(PRESS_HOLD_ACTIONS, "press_hold")
+        self.press_right = self._combo(PRESS_HOLD_ACTIONS, "press_hold")
         self.press_left.currentIndexChanged.connect(
             lambda _index: self._emit(
                 "press_hold", ("left", self.press_left.currentData())
@@ -1429,13 +1486,17 @@ class FeaturesPanel(QFrame):
                 "press_hold", ("right", self.press_right.currentData())
             )
         )
-        press.body.addWidget(FeatureRow("Fone esquerdo", "", self.press_left))
-        press.body.addWidget(FeatureRow("Fone direito", "", self.press_right))
+        press.body.addWidget(FeatureRow(t("gestures.side_left"), "", self.press_left))
+        press.body.addWidget(
+            FeatureRow(t("gestures.side_right"), "", self.press_right)
+        )
         grid.addWidget(press, 0, 0)
 
-        pinch = FeatureCard("Pinçar e segurar", "POR LADO", kind="gestures")
-        self.pinch_left = self._combo(PINCH_HOLD_ACTIONS)
-        self.pinch_right = self._combo(PINCH_HOLD_ACTIONS)
+        pinch = FeatureCard(
+            t("gestures.pinch_title"), t("gestures.pinch_badge"), kind="gestures"
+        )
+        self.pinch_left = self._combo(PINCH_HOLD_ACTIONS, "pinch_hold")
+        self.pinch_right = self._combo(PINCH_HOLD_ACTIONS, "pinch_hold")
         self.pinch_left.currentIndexChanged.connect(
             lambda _index: self._emit(
                 "pinch_hold", ("left", self.pinch_left.currentData())
@@ -1446,15 +1507,19 @@ class FeaturesPanel(QFrame):
                 "pinch_hold", ("right", self.pinch_right.currentData())
             )
         )
-        pinch.body.addWidget(FeatureRow("Fone esquerdo", "", self.pinch_left))
-        pinch.body.addWidget(FeatureRow("Fone direito", "", self.pinch_right))
+        pinch.body.addWidget(FeatureRow(t("gestures.side_left"), "", self.pinch_left))
+        pinch.body.addWidget(
+            FeatureRow(t("gestures.side_right"), "", self.pinch_right)
+        )
         grid.addWidget(pinch, 0, 1)
 
-        taps = FeatureCard("Toques", "DOIS E TRÊS TOQUES", kind="gestures")
-        self.double_left = self._combo(DOUBLE_TAP_ACTIONS)
-        self.double_right = self._combo(DOUBLE_TAP_ACTIONS)
-        self.triple_left = self._combo(TRIPLE_TAP_ACTIONS)
-        self.triple_right = self._combo(TRIPLE_TAP_ACTIONS)
+        taps = FeatureCard(
+            t("gestures.taps_title"), t("gestures.taps_badge"), kind="gestures"
+        )
+        self.double_left = self._combo(DOUBLE_TAP_ACTIONS, "double_tap")
+        self.double_right = self._combo(DOUBLE_TAP_ACTIONS, "double_tap")
+        self.triple_left = self._combo(TRIPLE_TAP_ACTIONS, "triple_tap")
+        self.triple_right = self._combo(TRIPLE_TAP_ACTIONS, "triple_tap")
         for combo in (self.double_left, self.double_right):
             combo.currentIndexChanged.connect(lambda _index: self._emit_double())
         self.triple_left.currentIndexChanged.connect(
@@ -1467,26 +1532,36 @@ class FeaturesPanel(QFrame):
                 "triple_tap", ("right", self.triple_right.currentData())
             )
         )
-        taps.body.addWidget(FeatureRow("Duplo · esquerdo", "", self.double_left))
-        taps.body.addWidget(FeatureRow("Duplo · direito", "", self.double_right))
-        taps.body.addWidget(FeatureRow("Triplo · esquerdo", "", self.triple_left))
-        taps.body.addWidget(FeatureRow("Triplo · direito", "", self.triple_right))
+        taps.body.addWidget(
+            FeatureRow(t("gestures.double_left"), "", self.double_left)
+        )
+        taps.body.addWidget(
+            FeatureRow(t("gestures.double_right"), "", self.double_right)
+        )
+        taps.body.addWidget(
+            FeatureRow(t("gestures.triple_left"), "", self.triple_left)
+        )
+        taps.body.addWidget(
+            FeatureRow(t("gestures.triple_right"), "", self.triple_right)
+        )
         grid.addWidget(taps, 1, 0)
 
-        head = FeatureCard("Controle de cabeça", "CHAMADAS", kind="head_control")
+        head = FeatureCard(
+            t("gestures.head_title"), t("gestures.head_badge"), kind="head_control"
+        )
         self.head_switch = ToggleSwitch()
         self.head_switch.toggled.connect(
             lambda checked: self._emit("head_control", checked)
         )
         head.body.addWidget(
             FeatureRow(
-                "Ativar controle de cabeça",
-                "Atenda ou recuse chamadas acenando ou balançando a cabeça.",
+                t("gestures.head_enable"),
+                t("gestures.head_enable_subtitle"),
                 self.head_switch,
             )
         )
-        self.head_nod = self._combo(HEAD_NOD_ACTIONS)
-        self.head_shake = self._combo(HEAD_SHAKE_ACTIONS)
+        self.head_nod = self._combo(HEAD_NOD_ACTIONS, "head_nod")
+        self.head_shake = self._combo(HEAD_SHAKE_ACTIONS, "head_shake")
         self.head_nod.currentIndexChanged.connect(
             lambda _index: self._emit("head_action", (3, self.head_nod.currentData()))
         )
@@ -1495,20 +1570,23 @@ class FeaturesPanel(QFrame):
                 "head_action", (4, self.head_shake.currentData())
             )
         )
-        head.body.addWidget(FeatureRow("Acene com a cabeça", "", self.head_nod))
-        head.body.addWidget(FeatureRow("Balance a cabeça", "", self.head_shake))
+        head.body.addWidget(
+            FeatureRow(t("gestures.head_nod"), "", self.head_nod)
+        )
+        head.body.addWidget(
+            FeatureRow(t("gestures.head_shake"), "", self.head_shake)
+        )
         grid.addWidget(head, 1, 1)
 
         layout.addLayout(grid)
 
-        swipe = FeatureCard("Deslizar", "SOMENTE LEITURA", kind="gestures")
-        self.swipe_label = QLabel("—")
+        swipe = FeatureCard(
+            t("gestures.swipe_title"), t("gestures.swipe_badge"), kind="gestures"
+        )
+        self.swipe_label = QLabel(t("common.none"))
         self.swipe_label.setObjectName("featureValue")
         swipe.body.addWidget(self.swipe_label)
-        swipe_hint = QLabel(
-            "O gesto de deslizar não gerou uma escrita confirmada no protocolo; "
-            "o estado atual é apenas exibido."
-        )
+        swipe_hint = QLabel(t("gestures.swipe_hint"))
         swipe_hint.setObjectName("featureHint")
         swipe_hint.setWordWrap(True)
         swipe.body.addWidget(swipe_hint)
@@ -1522,22 +1600,28 @@ class FeaturesPanel(QFrame):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(20)
 
-        quality = FeatureCard("Qualidade do som", "TRANSMISSÃO", kind="device_phone")
+        quality = FeatureCard(
+            t("connection.quality_title"),
+            t("connection.quality_badge"),
+            kind="device_phone",
+        )
         self.quality_chips = ChipGroup(
-            ((0, "Priorizar conexão"), (1, "Priorizar qualidade")),
+            (
+                (0, t("options.quality.connection")),
+                (1, t("options.quality.quality")),
+            ),
             columns=2,
         )
         self.quality_chips.value_changed.connect(
             lambda value: self._emit("sound_quality", value)
         )
         quality.body.addWidget(self.quality_chips)
-        self.codec_label = QLabel("Prioridade: —")
+        self.codec_label = QLabel(
+            t("connection.quality_current", value=t("common.none"))
+        )
         self.codec_label.setObjectName("rowSubtitle")
         quality.body.addWidget(self.codec_label)
-        quality_hint = QLabel(
-            "Qualidade prioriza codecs de maior taxa, com possível atraso; "
-            "conexão favorece estabilidade."
-        )
+        quality_hint = QLabel(t("connection.quality_hint"))
         quality_hint.setObjectName("featureHint")
         quality_hint.setWordWrap(True)
         quality.body.addWidget(quality_hint)
@@ -1549,57 +1633,69 @@ class FeaturesPanel(QFrame):
         grid.setColumnStretch(0, 1)
         grid.setColumnStretch(1, 1)
 
-        latency = FeatureCard("Latência baixa de áudio", "MODO DE JOGO", kind="device_pc")
+        latency = FeatureCard(
+            t("connection.latency_title"),
+            t("connection.latency_badge"),
+            kind="device_pc",
+        )
         self.latency_switch = ToggleSwitch()
         self.latency_switch.toggled.connect(
             lambda checked: self._emit("low_latency", checked)
         )
         latency.body.addWidget(
             FeatureRow(
-                "Latência baixa",
-                "Reduz o atraso para vídeos e jogos.",
+                t("connection.latency_row"),
+                t("connection.latency_subtitle"),
                 self.latency_switch,
             )
         )
         grid.addWidget(latency, 0, 0)
 
-        wear = FeatureCard("Detecção de uso", "AUTOMÁTICO", kind="wear_detection")
+        wear = FeatureCard(
+            t("connection.wear_title"),
+            t("connection.wear_badge"),
+            kind="wear_detection",
+        )
         self.wear_switch = ToggleSwitch()
         self.wear_switch.toggled.connect(
             lambda checked: self._emit("wear_detection", checked)
         )
         wear.body.addWidget(
             FeatureRow(
-                "Detecção de uso inteligente",
-                "Pausa e retoma ao colocar ou tirar os fones.",
+                t("connection.wear_row"),
+                t("connection.wear_subtitle"),
                 self.wear_switch,
             )
         )
         grid.addWidget(wear, 0, 1)
 
-        one_earbud = FeatureCard("ANC com um fone", "FLEXÍVEL", kind="wear_detection")
+        one_earbud = FeatureCard(
+            t("connection.one_title"),
+            t("connection.one_badge"),
+            kind="wear_detection",
+        )
         self.one_earbud_switch = ToggleSwitch()
         self.one_earbud_switch.toggled.connect(
             lambda checked: self._emit("one_earbud_anc", checked)
         )
         one_earbud.body.addWidget(
             FeatureRow(
-                "Cancelamento com um fone",
-                "Mantém o controle de ruído ao usar apenas um lado.",
+                t("connection.one_row"),
+                t("connection.one_subtitle"),
                 self.one_earbud_switch,
             )
         )
         grid.addWidget(one_earbud, 1, 0)
 
-        multipoint = FeatureCard("Multi-conexão", "SOMENTE LEITURA", kind="device_phone")
-        self.multipoint_label = QLabel("—")
+        multipoint = FeatureCard(
+            t("connection.multipoint_title"),
+            t("connection.multipoint_badge"),
+            kind="device_phone",
+        )
+        self.multipoint_label = QLabel(t("common.none"))
         self.multipoint_label.setObjectName("featureValue")
         multipoint.body.addWidget(self.multipoint_label)
-        multipoint_hint = QLabel(
-            "Desativar esse recurso derruba a conexão do outro dispositivo. "
-            "A escrita não foi validada no Windows, por isso o estado é "
-            "somente informativo."
-        )
+        multipoint_hint = QLabel(t("connection.multipoint_hint"))
         multipoint_hint.setObjectName("featureHint")
         multipoint_hint.setWordWrap(True)
         multipoint.body.addWidget(multipoint_hint)
@@ -1613,10 +1709,10 @@ class FeaturesPanel(QFrame):
     # Utilidades
     # ------------------------------------------------------------------
     @staticmethod
-    def _combo(options: dict[int, str]) -> InlineComboBox:
+    def _combo(options: dict[int, str], category: str) -> InlineComboBox:
         combo = InlineComboBox()
         for value, label in options.items():
-            combo.addItem(label, value)
+            combo.addItem(option_label(category, value, label), value)
         combo.setMinimumWidth(196)
         return combo
 
@@ -1680,23 +1776,34 @@ class FeaturesPanel(QFrame):
         try:
             self._advanced = settings or AdvancedSettings()
             data = self._advanced
-            profile_name = SOUND_PROFILES.get(data.sound_profile_id or -1)
-            if profile_name == "Personalizado" and data.custom_name:
-                profile_name = f"Personalizado · {data.custom_name}"
-            self.sound_profile_label.setText(profile_name or "—")
+            profile = SOUND_PROFILES.get(
+                data.sound_profile_id
+                if data.sound_profile_id is not None
+                else -1
+            )
+            profile_name = option_label(
+                "sound_profile", data.sound_profile_id, profile or t("common.none")
+            )
+            if profile_name == t("options.sound_profile.custom") and data.custom_name:
+                profile_name = t("audio.custom_profile", name=data.custom_name)
+            self.sound_profile_label.setText(profile_name or t("common.none"))
             self.sound_chips.set_value(data.sound_profile_id)
             self.sound_chips.set_option_enabled(
                 100, bool(data.custom_eq and data.custom_name)
             )
 
             self.spatial_chips.set_value(data.spatial_mode)
-            effect = SPATIAL_EFFECTS.get(
-                data.spatial_effect if data.spatial_effect is not None else -1,
-                f"ID {data.spatial_effect}"
-                if data.spatial_effect is not None
-                else "—",
+            effect_id = data.spatial_effect
+            effect_fallback = SPATIAL_EFFECTS.get(
+                effect_id if effect_id is not None else -1,
+                f"ID {effect_id}" if effect_id is not None else t("common.none"),
             )
-            self.spatial_effect_label.setText(f"Efeito: {effect}")
+            effect = option_label(
+                "spatial_effect", effect_id, effect_fallback
+            )
+            self.spatial_effect_label.setText(
+                t("audio.spatial_effect", effect=effect)
+            )
 
             self._set_switch(self.adaptive_volume_switch, data.adaptive_volume)
             self._set_switch(
@@ -1710,19 +1817,23 @@ class FeaturesPanel(QFrame):
             self._set_switch(self.latency_switch, data.low_latency)
             self._set_switch(self.wear_switch, data.wear_detection)
             self._set_switch(self.one_earbud_switch, data.one_earbud_anc)
-            multipoint = (
-                "Ativada"
-                if data.multipoint
-                else ("Desativada" if data.multipoint is False else "—")
+            if data.multipoint is True:
+                multipoint = t("connection.multipoint_active")
+            elif data.multipoint is False:
+                multipoint = t("connection.multipoint_inactive")
+            else:
+                multipoint = t("common.none")
+            self.multipoint_label.setText(
+                t("connection.multipoint_value", status=multipoint)
             )
-            self.multipoint_label.setText(f"Multi-conexão: {multipoint}")
-            quality = {0: "Priorizar conexão", 1: "Priorizar qualidade"}.get(
-                data.sound_quality
-                if data.sound_quality is not None
-                else -1,
-                "—",
+            quality = option_label(
+                "quality",
+                data.sound_quality,
+                t("common.none"),
             )
-            self.codec_label.setText(f"Prioridade: {quality}")
+            self.codec_label.setText(
+                t("connection.quality_current", value=quality)
+            )
 
             self._set_combo(self.press_left, data.press_hold_left)
             self._set_combo(self.press_right, data.press_hold_right)
@@ -1735,14 +1846,22 @@ class FeaturesPanel(QFrame):
 
             swipe_labels = []
             if data.swipe_up is not None:
-                swipe_labels.append(
-                    f"Cima: {SWIPE_ACTIONS.get(data.swipe_up, f'ID {data.swipe_up}')}"
+                action = option_label(
+                    "swipe",
+                    data.swipe_up,
+                    SWIPE_ACTIONS.get(data.swipe_up, f"ID {data.swipe_up}"),
                 )
+                swipe_labels.append(t("gestures.swipe_up", action=action))
             if data.swipe_down is not None:
-                swipe_labels.append(
-                    f"Baixo: {SWIPE_ACTIONS.get(data.swipe_down, f'ID {data.swipe_down}')}"
+                action = option_label(
+                    "swipe",
+                    data.swipe_down,
+                    SWIPE_ACTIONS.get(data.swipe_down, f"ID {data.swipe_down}"),
                 )
-            self.swipe_label.setText(" · ".join(swipe_labels) or "—")
+                swipe_labels.append(t("gestures.swipe_down", action=action))
+            self.swipe_label.setText(
+                " · ".join(swipe_labels) or t("common.none")
+            )
             self.set_enabled(self._enabled)
         finally:
             self._updating = False
@@ -1759,22 +1878,22 @@ class DeviceDetailsPanel(QFrame):
         layout.setContentsMargins(22, 20, 22, 18)
         layout.setSpacing(4)
 
-        title = QLabel("Informações técnicas")
+        title = QLabel(t("details.title"))
         title.setObjectName("cardTitle")
         layout.addWidget(title)
-        caption = QLabel("Modelo, firmware e sessão atual")
+        caption = QLabel(t("details.subtitle"))
         caption.setObjectName("cardSubtitle")
         layout.addWidget(caption)
         layout.addSpacing(10)
 
         self._values: dict[str, QLabel] = {}
         fields = (
-            ("model", "Modelo"),
-            ("submodel", "Submodelo"),
-            ("firmware", "Firmware"),
-            ("hardware", "Hardware"),
-            ("channel", "Canal RFCOMM"),
-            ("updated", "Última leitura"),
+            ("model", t("details.model")),
+            ("submodel", t("details.submodel")),
+            ("firmware", t("details.firmware")),
+            ("hardware", t("details.hardware")),
+            ("channel", t("details.channel")),
+            ("updated", t("details.updated")),
         )
         for index, (key, label) in enumerate(fields):
             row = QHBoxLayout()
@@ -1782,7 +1901,7 @@ class DeviceDetailsPanel(QFrame):
             row.setSpacing(16)
             name = QLabel(label)
             name.setObjectName("rowSubtitle")
-            value = QLabel("—")
+            value = QLabel(t("common.none"))
             value.setObjectName("rowValue")
             value.setAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
@@ -1809,18 +1928,26 @@ class DeviceDetailsPanel(QFrame):
         updated_at: datetime | None = None,
     ) -> None:
         if info is None:
-            self._values["model"].setText("—")
-            self._values["submodel"].setText("—")
-            self._values["firmware"].setText("—")
-            self._values["hardware"].setText("—")
+            self._values["model"].setText(t("common.none"))
+            self._values["submodel"].setText(t("common.none"))
+            self._values["firmware"].setText(t("common.none"))
+            self._values["hardware"].setText(t("common.none"))
         else:
-            self._values["model"].setText(_value_text(info.model))
-            self._values["submodel"].setText(_value_text(info.submodel))
-            self._values["firmware"].setText(_value_text(info.software_version))
-            self._values["hardware"].setText(_value_text(info.hardware_version))
-        self._values["channel"].setText(str(channel) if channel else "—")
+            self._values["model"].setText(_value_text(info.model, t("common.none")))
+            self._values["submodel"].setText(
+                _value_text(info.submodel, t("common.none"))
+            )
+            self._values["firmware"].setText(
+                _value_text(info.software_version, t("common.none"))
+            )
+            self._values["hardware"].setText(
+                _value_text(info.hardware_version, t("common.none"))
+            )
+        self._values["channel"].setText(
+            str(channel) if channel else t("common.none")
+        )
         self._values["updated"].setText(
-            updated_at.strftime("%H:%M:%S") if updated_at else "—"
+            updated_at.strftime("%H:%M:%S") if updated_at else t("common.none")
         )
 
 

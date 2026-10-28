@@ -47,6 +47,7 @@ from .icons import (
     make_refresh_icon,
     make_search_icon,
 )
+from .i18n import language_options, set_language, t
 from .theme import APP_STYLESHEET
 from .tray import TrayController
 from .widgets import (
@@ -178,6 +179,7 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self._settings_store = SettingsStore(settings_path)
         self._settings = self._settings_store.load()
+        set_language(self._settings.language)
         self._devices: list[BluetoothDevice] = []
         self._worker: DeviceWorker | None = None
         self._scan_worker: ScanWorker | None = None
@@ -682,6 +684,19 @@ class MainWindow(QMainWindow):
         )
         card.body.addWidget(self.close_tray_row)
 
+        self.language_combo = FieldComboBox()
+        for code, name in language_options():
+            self.language_combo.addItem(name, code)
+        self.language_combo.setToolTip(t("preferences.language_subtitle"))
+        self.language_combo.setFixedWidth(132)
+        card.body.addWidget(
+            FeatureRow(
+                t("preferences.language_title"),
+                t("preferences.language_subtitle"),
+                self.language_combo,
+            )
+        )
+
         self.refresh_now_button = QPushButton("Atualizar agora")
         self.refresh_now_button.setObjectName("ghost")
         self.refresh_now_button.setIcon(make_refresh_icon(16))
@@ -784,12 +799,22 @@ class MainWindow(QMainWindow):
     def _apply_settings(self) -> None:
         self._select_interval(self._settings.poll_interval)
         self.close_tray_check.setChecked(self._settings.close_to_tray)
+        self._select_language(self._settings.language)
         self.interval_combo.currentIndexChanged.connect(
             self._on_interval_changed
         )
         self.close_tray_check.toggled.connect(
             self._on_close_to_tray_changed
         )
+        self.language_combo.currentIndexChanged.connect(
+            self._on_language_changed
+        )
+
+    def _select_language(self, language: str) -> None:
+        for index in range(self.language_combo.count()):
+            if self.language_combo.itemData(index) == language:
+                self.language_combo.setCurrentIndex(index)
+                return
 
     def _select_interval(self, seconds: float) -> None:
         for index in range(self.interval_combo.count()):
@@ -1541,6 +1566,18 @@ class MainWindow(QMainWindow):
     def _on_close_to_tray_changed(self, checked: bool) -> None:
         self._settings.close_to_tray = checked
         self._save_settings()
+
+    def _on_language_changed(self, index: int) -> None:
+        code = self.language_combo.itemData(index)
+        if isinstance(code, str) and code != self._settings.language:
+            self._settings.language = code
+            self._save_settings()
+            set_language(code)
+            QMessageBox.information(
+                self,
+                t("preferences.restart_title"),
+                t("preferences.restart_body"),
+            )
 
     def _save_settings(self) -> None:
         try:

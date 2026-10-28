@@ -47,7 +47,7 @@ package-dir = { "" = "src" }
 where = ["src"]
 
 [tool.setuptools.package-data]
-"freebuds.ui" = ["assets/*.png", "assets/icons/*.svg"]
+"freebuds.ui" = ["assets/*.png", "assets/icons/*.svg", "locales/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

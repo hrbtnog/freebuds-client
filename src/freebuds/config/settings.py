@@ -38,6 +38,7 @@ class Settings:
     response_timeout: float = 2.0
     poll_interval: float = 30.0
     close_to_tray: bool = True
+    language: str = "pt"
     last_device: str | None = None
     # Endereço -> canal que funcionou na última sessão.
     last_channels: dict[str, int] = field(default_factory=dict)
@@ -78,6 +79,14 @@ class Settings:
         close_to_tray = data.get("close_to_tray")
         if isinstance(close_to_tray, bool):
             settings.close_to_tray = close_to_tray
+
+        language = data.get("language")
+        if isinstance(language, str):
+            normalized = language.strip().lower().replace("_", "-")
+            if normalized.startswith("en"):
+                settings.language = "en"
+            elif normalized.startswith("pt"):
+                settings.language = "pt"
 
         last_device = data.get("last_device")
         if isinstance(last_device, str):
