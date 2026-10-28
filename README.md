@@ -19,6 +19,10 @@ Este é um projeto pessoal de aprendizado: eu queria uma forma de ver a bateria 
 controlar o cancelamento de ruído do meu FreeBuds Pro 5 pelo PC, sem depender do
 celular e sem usar o HUAWEI AI Life.
 
+Vale destacar que a proposta do aplicativo não é substituir a necessidade de um smartphone com o Huawei AI Life ou Huawei Audio Connect para o gerenciamento completo do fone. Recursos como equalização personalizada, configurações da case, função buscar, teste de ajuste das ponteiras e outros ajustes avançados não existem neste projeto por enquanto (e alguns podem nem ser implementados por conta de limitações técnicas).
+
+A ideia inicial é apenas complementar a experiência de uso, oferecendo um acesso rápido e prático às principais funções diretamente pelo Windows, preenchendo uma lacuna que a própria Huawei não disponibiliza nativamente.
+
 Não é um produto comercial. Não tem suporte oficial, prazo ou garantia. O código
 foi escrito com assistência de IA e testado por mim no hardware que eu tenho.
 Se você encontrar algo estranho, me avise que eu tento corrigir. Estou aberto a
