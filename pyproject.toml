@@ -31,6 +31,11 @@ dependencies = []
 ui = ["PySide6-Essentials>=6.7"]
 dev = ["pytest>=8.0", "ruff>=0.8"]
 
+[project.urls]
+Homepage = "https://github.com/hrbtnog/freebuds-client"
+Repository = "https://github.com/hrbtnog/freebuds-client"
+Issues = "https://github.com/hrbtnog/freebuds-client/issues"
+
 [project.scripts]
 freebuds = "freebuds.cli.app:main"
 freebuds-ui = "freebuds.ui.app:main"

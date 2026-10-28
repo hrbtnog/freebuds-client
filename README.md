@@ -1,5 +1,8 @@
 # FreeBuds Client
 
+[![CI](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml/badge.svg)](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
+
 Cliente desktop **não oficial** para gerenciar fones HUAWEI FreeBuds no Windows,
 inspirado na ergonomia do Galaxy Buds Client. O objetivo é oferecer bateria,
 controle de ruído, equalizador, gestos, multiponto e testes de hardware sem a
