@@ -28,13 +28,11 @@ from PySide6.QtGui import (
     QFontMetrics,
     QIcon,
     QImage,
-    QLinearGradient,
     QMouseEvent,
     QPainter,
     QPainterPath,
     QPen,
     QPixmap,
-    QRadialGradient,
     QRegion,
     QTextCursor,
 )
