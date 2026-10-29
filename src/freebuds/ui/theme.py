@@ -170,8 +170,13 @@ QLabel#statusPill[state="error"] {{ color: {RED}; }}
 /* ------------------------------------------------------------------ */
 QFrame#hero {{
     background: qlineargradient(
-        x1: 0, y1: 0, x2: 0, y2: 1,
-        stop: 0 #1B1B1F, stop: 1 #111113
+        x1: 0, y1: 0, x2: 1, y2: 0,
+        stop: 0 #1b1b1f,
+        stop: 0.55 #1b1b1f,
+        stop: 0.70 #212126,
+        stop: 0.85 #29292e,
+        stop: 0.92 #2d2d32,
+        stop: 1 #2d2d32
     );
     border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 28px;

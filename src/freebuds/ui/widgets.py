@@ -12,12 +12,24 @@ from collections.abc import Callable, Iterable
 from datetime import datetime
 from pathlib import Path
 
-from PySide6.QtCore import QPointF, QRectF, QSize, Qt, QTimer, Signal
+from PySide6.QtCore import (
+    QEasingCurve,
+    QPointF,
+    QRectF,
+    QSize,
+    Qt,
+    QTimer,
+    QVariantAnimation,
+    Signal,
+)
 from PySide6.QtGui import (
     QColor,
     QFont,
     QFontMetrics,
     QIcon,
+    QImage,
+    QLinearGradient,
+    QMouseEvent,
     QPainter,
     QPainterPath,
     QPen,
@@ -374,16 +386,64 @@ class InlineComboBox(_RoundedPopupCombo):
 
 
 class ProductHero(QWidget):
-    """Foto do produto com brilho suave e as pastilhas de bateria flutuantes."""
+    """Foto do produto com iluminação de estúdio e pastilhas de bateria.
 
-    def __init__(self, parent: QWidget | None = None) -> None:
+    Easter egg: duplo clique na imagem alterna suavemente entre as cores dos
+    fones (Sand, White, Grey, Blue) através de uma varredura orgânica de brilho
+    especular (sem corte bruto ou cross-fade simples).
+    """
+
+    color_changed = Signal(str)
+
+    COLOR_VARIANTS: tuple[str, ...] = ("grey", "white", "sand", "blue")
+
+    def __init__(
+        self,
+        initial_color: str = "sand",
+        parent: QWidget | None = None,
+    ) -> None:
         super().__init__(parent)
         self.setMinimumSize(300, 230)
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
-        asset = Path(__file__).with_name("assets") / "freebuds_pro_5.png"
-        self._image = QPixmap(str(asset))
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        assets_dir = Path(__file__).with_name("assets")
+        self._images: dict[str, QImage] = {}
+        for color in self.COLOR_VARIANTS:
+            path = assets_dir / f"specs-{color}.png"
+            if path.exists():
+                img = QImage(str(path))
+                if not img.isNull():
+                    self._images[color] = img.convertToFormat(
+                        QImage.Format.Format_ARGB32_Premultiplied
+                    )
+
+        fallback = assets_dir / "freebuds_pro_5.png"
+        fallback_img = (
+            QImage(str(fallback)).convertToFormat(
+                QImage.Format.Format_ARGB32_Premultiplied
+            )
+            if fallback.exists()
+            else QImage()
+        )
+        if "sand" not in self._images and not fallback_img.isNull():
+            self._images["sand"] = fallback_img
+
+        self._current_color = (
+            initial_color if initial_color in self._images else "sand"
+        )
+        self._prev_color: str | None = None
+        self._anim_progress: float = 1.0
+        self._target_rect = QRectF()
+
+        self._anim = QVariantAnimation(self)
+        self._anim.setDuration(450)
+        self._anim.setEasingCurve(QEasingCurve.Type.InOutQuad)
+        self._anim.valueChanged.connect(self._on_anim_step)
+        self._anim.finished.connect(self._on_anim_finished)
+
         self._buds_icon = (
             feature_pixmap("earbuds", 40, tint="#E8E8ED") or QPixmap()
         )
@@ -391,6 +451,63 @@ class ProductHero(QWidget):
         self._buds: int | None = None
         self._case: int | None = None
         self._charging = False
+
+    def color(self) -> str:
+        return self._current_color
+
+    def set_color(self, color: str, animate: bool = True) -> None:
+        if color not in self._images or color == self._current_color:
+            return
+        if not animate:
+            self._current_color = color
+            self._prev_color = None
+            self._anim_progress = 1.0
+            self.update()
+            self.color_changed.emit(color)
+            return
+
+        self._prev_color = self._current_color
+        self._current_color = color
+        self._anim.stop()
+        self._anim.setStartValue(0.0)
+        self._anim.setEndValue(1.0)
+        self._anim.start()
+        self.color_changed.emit(color)
+
+    def next_color(self) -> str:
+        colors = [c for c in self.COLOR_VARIANTS if c in self._images]
+        if not colors:
+            return self._current_color
+        try:
+            idx = colors.index(self._current_color)
+            next_c = colors[(idx + 1) % len(colors)]
+        except ValueError:
+            next_c = colors[0]
+        self.set_color(next_c, animate=True)
+        return next_c
+
+    def _on_anim_step(self, value: object) -> None:
+        self._anim_progress = float(value)  # type: ignore[arg-type]
+        self.update()
+
+    def _on_anim_finished(self) -> None:
+        self._prev_color = None
+        self._anim_progress = 1.0
+        self.update()
+
+    def mouseDoubleClickEvent(self, event: QMouseEvent) -> None:
+        if event.button() == Qt.MouseButton.LeftButton:
+            # Alterna quando o duplo clique ocorre sobre a região do fone
+            pos = event.position()
+            if self._target_rect.isValid() and self._target_rect.contains(pos):
+                self.next_color()
+                event.accept()
+                return
+            elif not self._target_rect.isValid() and self.rect().contains(pos.toPoint()):
+                self.next_color()
+                event.accept()
+                return
+        super().mouseDoubleClickEvent(event)
 
     def set_battery(
         self,
@@ -409,52 +526,43 @@ class ProductHero(QWidget):
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
         rect = self.rect()
 
-        # Luz de estúdio, bem discreta, atrás do produto.
-        glow = QRadialGradient(
-            rect.width() * 0.62,
-            rect.height() * 0.46,
-            max(rect.width(), rect.height()) * 0.56,
-        )
-        glow.setColorAt(0.0, QColor(255, 255, 255, 20))
-        glow.setColorAt(0.55, QColor(180, 200, 255, 7))
-        glow.setColorAt(1.0, QColor(0, 0, 0, 0))
-        painter.fillRect(rect, glow)
-
-        if not self._image.isNull():
+        current_img = self._images.get(self._current_color)
+        if current_img is not None and not current_img.isNull():
             available_w = max(1, rect.width() - 118)
             available_h = max(1, rect.height() - 26)
-            scaled = self._image.scaled(
-                available_w,
-                available_h,
+            scaled_curr = current_img.scaled(
+                int(available_w),
+                int(available_h),
                 Qt.AspectRatioMode.KeepAspectRatio,
                 Qt.TransformationMode.SmoothTransformation,
             )
             target = QRectF(
-                rect.width() - scaled.width() - 14,
-                (rect.height() - scaled.height()) / 2.0 + 4,
-                scaled.width(),
-                scaled.height(),
+                rect.width() - scaled_curr.width() - 14,
+                (rect.height() - scaled_curr.height()) / 2.0 + 4,
+                scaled_curr.width(),
+                scaled_curr.height(),
             )
-            shadow = QRadialGradient(
-                target.center().x(),
-                target.bottom() - 4,
-                target.width() * 0.42,
-            )
-            shadow.setColorAt(0.0, QColor(0, 0, 0, 130))
-            shadow.setColorAt(1.0, QColor(0, 0, 0, 0))
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(shadow)
-            painter.drawEllipse(
-                QRectF(
-                    target.center().x() - target.width() * 0.42,
-                    target.bottom() - 16,
-                    target.width() * 0.84,
-                    30,
-                )
-            )
-            painter.drawPixmap(target, scaled, QRectF(scaled.rect()))
+            self._target_rect = target
 
-        # Pastilhas verticais de bateria, como na tela inicial do app oficial.
+            # Transição orgânica entre cores
+            if (
+                self._prev_color
+                and self._prev_color in self._images
+                and self._anim_progress < 1.0
+            ):
+                prev_img = self._images[self._prev_color]
+                scaled_prev = prev_img.scaled(
+                    scaled_curr.size(),
+                    Qt.AspectRatioMode.IgnoreAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+                self._draw_organic_transition(
+                    painter, target, scaled_prev, scaled_curr, self._anim_progress
+                )
+            else:
+                painter.drawImage(target, scaled_curr)
+
+        # Pastilhas verticais de bateria
         if self._buds is not None or self._case is not None:
             pill_w, pill_h, gap = 64, 88, 10
             x = 6
@@ -466,6 +574,45 @@ class ProductHero(QWidget):
                 painter, x + pill_w + gap, y, pill_w, pill_h, self._case, "case"
             )
         painter.end()
+
+    def _draw_organic_transition(
+        self,
+        painter: QPainter,
+        target: QRectF,
+        prev_img: QImage,
+        curr_img: QImage,
+        progress: float,
+    ) -> None:
+        w, h = curr_img.width(), curr_img.height()
+        comp = QImage(w, h, QImage.Format.Format_ARGB32_Premultiplied)
+        comp.fill(Qt.GlobalColor.transparent)
+        p = QPainter(comp)
+        p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
+
+        # 1. Desenha a imagem base anterior com decaimento suave no quarto final (progress > 0.75)
+        # para que ela já esteja completamente extinta ao término da animação.
+        base_opacity = 1.0 if progress <= 0.75 else max(0.0, 1.0 - ((progress - 0.75) / 0.25))
+        p.setOpacity(base_opacity)
+        p.drawImage(0, 0, prev_img)
+
+        # 2. Restringe estritamente à máscara de opacidade da imagem que entra,
+        # impedindo que qualquer pixel da base exista onde a nova tem alfa 0
+        p.setCompositionMode(
+            QPainter.CompositionMode.CompositionMode_DestinationIn
+        )
+        p.setOpacity(1.0)
+        p.drawImage(0, 0, curr_img)
+
+        # 3. Revela a nova cor por cima com opacidade proporcional ao progresso
+        p.setCompositionMode(
+            QPainter.CompositionMode.CompositionMode_SourceOver
+        )
+        p.setOpacity(max(0.0, min(1.0, progress)))
+        p.drawImage(0, 0, curr_img)
+        p.end()
+
+        painter.drawImage(target, comp)
 
     def _draw_battery_pill(
         self,

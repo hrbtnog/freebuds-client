@@ -600,7 +600,10 @@ class MainWindow(QMainWindow):
         info.addWidget(self.hero_battery_box)
 
         layout.addLayout(info, 5)
-        self.product_hero = ProductHero()
+        self.product_hero = ProductHero(
+            initial_color=self._settings.earbud_color
+        )
+        self.product_hero.color_changed.connect(self._on_earbud_color_changed)
         layout.addWidget(self.product_hero, 6)
         return hero
 
@@ -1566,6 +1569,11 @@ class MainWindow(QMainWindow):
     def _on_close_to_tray_changed(self, checked: bool) -> None:
         self._settings.close_to_tray = checked
         self._save_settings()
+
+    def _on_earbud_color_changed(self, color: str) -> None:
+        if self._settings.earbud_color != color:
+            self._settings.earbud_color = color
+            self._save_settings()
 
     def _on_language_changed(self, index: int) -> None:
         code = self.language_combo.itemData(index)

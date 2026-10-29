@@ -219,7 +219,8 @@ def make_card_avatar(kind: str, size: int = 36) -> QPixmap:
     painter.drawEllipse(QRectF(0, 0, s, s))
 
     icon_size = max(1, int(s * 0.68))
-    svg = feature_pixmap(kind, icon_size)
+    tint = "#FFFFFF" if kind in ("spatial", "spatial_audio") else None
+    svg = feature_pixmap(kind, icon_size, tint=tint)
     if svg is not None:
         painter.drawPixmap(
             QRectF(

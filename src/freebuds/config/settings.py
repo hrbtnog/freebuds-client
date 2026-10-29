@@ -39,6 +39,7 @@ class Settings:
     poll_interval: float = 30.0
     close_to_tray: bool = True
     language: str = "pt"
+    earbud_color: str = "sand"
     last_device: str | None = None
     # Endereço -> canal que funcionou na última sessão.
     last_channels: dict[str, int] = field(default_factory=dict)
@@ -87,6 +88,10 @@ class Settings:
                 settings.language = "en"
             elif normalized.startswith("pt"):
                 settings.language = "pt"
+
+        color = data.get("earbud_color")
+        if isinstance(color, str) and color in ("sand", "white", "grey", "blue"):
+            settings.earbud_color = color
 
         last_device = data.get("last_device")
         if isinstance(last_device, str):
