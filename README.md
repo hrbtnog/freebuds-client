@@ -212,11 +212,9 @@ O canal RFCOMM varia por firmware/modelo (por exemplo, Pro/Pro 2/Pro 3/Pro 5 e
 
 ## Para quem não é programador
 
-Ainda não existe instalador `.exe`. Para usar hoje é necessário instalar Python
-e rodar alguns comandos; se você não tem familiaridade com terminal, siga o passo
-a passo e, se algo falhar, abra uma issue com a mensagem de erro. Empacotar um
-executável está nos próximos passos. Se você só quer testar e contar o resultado,
-isso também ajuda muito.
+Ainda não há um `.exe` oficial para baixar. É possível gerar um executável local
+seguindo os passos em [Gerar um executável](#gerar-um-executável-exe). Para usar
+o projeto pelo código-fonte, instale Python e siga os comandos abaixo.
 
 ## Instalação local
 
@@ -234,6 +232,36 @@ Sem ativar a venv:
 .\.venv\Scripts\python.exe -m pip install -e ".[dev,ui]"
 .\.venv\Scripts\freebuds.exe list
 ```
+
+## Gerar um executável (.exe)
+
+No Windows, com o ambiente virtual criado e o PowerShell aberto na pasta do
+projeto, instale a UI e o PyInstaller:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e ".[ui]" pyinstaller
+```
+
+Crie um pequeno script de entrada para abrir a interface:
+
+```powershell
+@'
+from freebuds.ui.app import main
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'@ | Set-Content -Encoding utf8 .\freebuds_ui_launcher.py
+```
+
+Empacote o aplicativo:
+
+```powershell
+.\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --name FreeBudsClient --paths .\src --collect-all freebuds .\freebuds_ui_launcher.py
+```
+
+O executável será criado em `dist\FreeBudsClient.exe`. Esse é um executável
+portátil, não um instalador; teste-o no Windows antes de compartilhar. O script
+`freebuds_ui_launcher.py` é usado durante a geração do `.exe`.
 
 ## Uso da CLI
 
