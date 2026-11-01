@@ -3,7 +3,7 @@
 [![CI](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml/badge.svg)](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml)
 [![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
 
-[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md)
+[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md) | [**Español**](README.es.md) | [**Русский**](README.ru.md) | [**简体中文**](README.zh-CN.md)
 
 Cliente desktop **não oficial** para gerenciar fones HUAWEI FreeBuds no Windows,
 inspirado na ergonomia do Galaxy Buds Client. O objetivo é oferecer bateria,
