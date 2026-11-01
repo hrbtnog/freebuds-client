@@ -42,9 +42,6 @@ testar, também ajuda muito.
   passkey ou confirmações de segurança do Windows.
 - **Não publique dados pessoais.** Evite colar endereço Bluetooth completo,
   serial, capturas HCI ou nomes de dispositivos em issues, prints e PRs.
-- **Ainda é experimental.** A versão visual atual foi exercitada no Windows e
-  por renderização offscreen; a validação completa da nova interface em hardware
-  ainda está pendente.
 
 ## Status do projeto
 
@@ -188,8 +185,6 @@ Execuções reais no canal `1` com o FreeBuds Pro 5 reportando modelo interno
 ### O que falta validar em hardware
 
 - DPI alto e ciclos de suspensão/retomada do Windows com a UI conectada.
-- Reconexão após o fone ser desligado/religado ou sair e voltar ao alcance.
-- Pareamento do zero em um dispositivo ainda não lembrado pelo Windows.
 - Notificação espontânea do nível adaptativo quando o celular muda o slider.
 - Layouts de bateria, flags de carga e notificações em outros modelos.
 
@@ -204,15 +199,12 @@ O canal RFCOMM varia por firmware/modelo (por exemplo, Pro/Pro 2/Pro 3/Pro 5 e
 
 ## Requisitos
 
-- Windows 10/11 com Bluetooth Classic habilitado.
-- Python 3.11+ (o desenvolvimento atual usa 3.14).
+- Windows 10/11 com Bluetooth.
 - Fones pareados no Windows, ligados e fora do estojo.
-- O app oficial no celular não deve estar mantendo uma sessão SPP ativa ao mesmo
-  tempo. Áudio A2DP pode continuar conectado.
 
 ## Para quem não é programador
 
-Ainda não há um `.exe` oficial para baixar. É possível gerar um executável local
+Há um `.exe` oficial para baixar em Releases. É possível gerar um executável local
 seguindo os passos em [Gerar um executável](#gerar-um-executável-exe). Para usar
 o projeto pelo código-fonte, instale Python e siga os comandos abaixo.
 
@@ -505,13 +497,9 @@ traduções.
    com a UI conectada.
 2. Observar a notificação espontânea do nível adaptativo quando o slider é
    movido pelo celular e confirmar a atualização imediata da UI.
-3. Mapear as opções de áudio espacial, HUAWEI SOUND/equalizador, áudio adaptável
-   de volume, gestos e multiponto por captura do app oficial; só então habilitar
-   escritas com confirmação e reversão.
-4. Observar notificações de bateria e testar `--listen` em outros firmwares para
+3. Observar notificações de bateria e testar `--listen` em outros firmwares para
    confirmar se eles usam `0x2B03` em vez do `0x2B2A` espontâneo.
-5. Validar o pareamento do zero em outro PC ou após remover o dispositivo.
-6. Repetir a validação em outros modelos/firmwares e preencher a tabela de
+4. Repetir a validação em outros modelos/firmwares e preencher a tabela de
    `docs/PROTOCOL.md`.
 
 ## Licença
@@ -529,6 +517,7 @@ abra uma issue.
 - Protocolo FreeBuds 4i — https://mmk.pw/en/posts/freebuds-4i-proto/
 - Freebuds playground — https://gist.github.com/melianmiko/02f7c6a550808e38d9b6760fb688e125
 - Gadgetbridge (FreeBuds) — https://codeberg.org/Freeyourgadget/Gadgetbridge
+- GalaxyBudsClient - https://github.com/timschneeb/GalaxyBudsClient
 
 Obrigado a quem testou, abriu issues e apontou erros. Este projeto não existiria
 sem a documentação pública desses projetos e sem as pessoas que responderam
