@@ -5,6 +5,8 @@
 
 [**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md) | [**Español**](README.es.md) | [**Русский**](README.ru.md) | [**简体中文**](README.zh-CN.md)
 
+> ⚠️ **Note:** This translation was performed by artificial intelligence (AI) and may contain errors or inaccuracies. The original reference documentation is available in [Portuguese](README.pt-BR.md).
+
 An **unofficial** Windows desktop client to manage HUAWEI FreeBuds earbuds, inspired by the ergonomics of Galaxy Buds Client. Its goal is to provide battery levels, noise control, equalizer presets, gestures, multipoint status, and hardware tests without a Huawei account and without HUAWEI AI Life.
 
 ---
