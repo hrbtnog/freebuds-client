@@ -300,7 +300,12 @@
     "action_failed": "Could not apply setting: {error}",
     "action_done": "{label}; confirmation received from the earbuds.",
     "interval": "Update interval: {seconds} s.",
-    "settings_save_error": "Could not save preferences: {error}"
+    "settings_save_error": "Could not save preferences: {error}",
+    "ready": "Ready. Earbuds update via real-time notifications. ANC control is enabled; other writes remain disabled.",
+    "anc_mode_changing": "Changing ANC to {label}...",
+    "anc_level_changing": "Changing ANC level to code {code}...",
+    "anc_adaptive_activating": "Activating Adaptive awareness...",
+    "anc_adaptive_level_changing": "Adjusting Adaptive awareness to level {level} of {total}..."
   },
   "actions": {
     "sound_profile": "HUAWEI Sound profile",

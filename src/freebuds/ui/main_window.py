@@ -47,7 +47,7 @@ from .icons import (
     make_refresh_icon,
     make_search_icon,
 )
-from .i18n import language_options, set_language, t
+from .i18n import language_options, option_label, set_language, t
 from .theme import APP_STYLESHEET
 from .tray import TrayController
 from .widgets import (
@@ -99,40 +99,49 @@ _PAGE_TITLES = {
 _FEATURE_SECTIONS = {"audio": 0, "gestures": 1, "connection": 2}
 
 
+def _page_title(key: str) -> str:
+    return t(f"nav.{key}", default=_PAGE_TITLES.get(key, key))
+
+
 def _battery_summary(battery: BatteryState | None) -> str:
     if battery is None:
-        return "sem leitura"
+        return t("battery.summary_none")
     parts: list[str] = []
     if battery.global_level is not None:
-        parts.append(f"global {battery.global_level}%")
+        parts.append(t("battery.global_short", value=battery.global_level))
     if battery.left is not None:
-        parts.append(f"E {battery.left}%")
+        parts.append(t("battery.left_short", value=battery.left))
     if battery.right is not None:
-        parts.append(f"D {battery.right}%")
+        parts.append(t("battery.right_short", value=battery.right))
     if battery.case is not None:
-        parts.append(f"estojo {battery.case}%")
+        parts.append(t("battery.case_short", value=battery.case))
     if battery.charging:
-        parts.append("carregando")
-    return ", ".join(parts) if parts else "sem leitura"
+        parts.append(t("battery.charging_short"))
+    return ", ".join(parts) if parts else t("battery.summary_none")
 
 
 def _anc_summary(anc: AncState | None) -> str:
     if anc is None:
-        return "sem leitura"
-    mode = _ANC_MODE_LABELS.get(anc.mode or "")
-    if mode is None:
-        mode = f"modo {anc.mode_code}" if anc.mode_code is not None else "desconhecido"
+        return t("anc.summary_none")
+    raw_mode = anc.mode or ""
+    mode = option_label("anc_mode", raw_mode, raw_mode.capitalize() or t("common.unknown"))
+    if anc.mode_code is not None and not anc.mode:
+        mode = t("anc.summary_unknown_mode", code=anc.mode_code)
     if anc.mode == "normal":
         return mode
     if anc.mode == "awareness" and anc.level_code == 4:
         if anc.adaptive_level is not None:
-            return f"{mode} (adaptável · nível {anc.adaptive_level + 1}/11)"
-        return f"{mode} (adaptável)"
+            return t(
+                "anc.summary_adaptive_level",
+                mode=mode,
+                level=anc.adaptive_level + 1,
+            )
+        return t("anc.summary_adaptive", mode=mode)
     if anc.level:
-        level = _ANC_LEVEL_LABELS.get(anc.level, anc.level)
-        return f"{mode} ({level})"
+        level_label = option_label("anc_level", anc.level, anc.level.capitalize())
+        return t("anc.summary_level", mode=mode, level=level_label)
     if anc.level_code is not None:
-        return f"{mode} (código {anc.level_code})"
+        return t("anc.summary_level_code", mode=mode, code=anc.level_code)
     return mode
 
 
@@ -221,12 +230,7 @@ class MainWindow(QMainWindow):
         self._refresh_devices(auto_select=address or self._settings.last_device)
         if self._settings_store.last_load_error:
             self._log(self._settings_store.last_load_error, "warn")
-        self._log(
-            "Pronto. O fone é atualizado por notificações em tempo real. "
-            "O controle de ANC está habilitado; as demais escritas continuam "
-            "desativadas.",
-            "muted",
-        )
+        self._log(t("log.ready"), "muted")
         QTimer.singleShot(250, lambda: self._maybe_auto_connect(address))
 
     # ------------------------------------------------------------------
@@ -313,8 +317,8 @@ class MainWindow(QMainWindow):
         self.nav_group = QButtonGroup(self)
         self.nav_group.setExclusive(True)
         self.nav_buttons: dict[str, QPushButton] = {}
-        for key, label, icon_kind in _NAV_ITEMS:
-            button = QPushButton(label)
+        for key, _, icon_kind in _NAV_ITEMS:
+            button = QPushButton(_page_title(key))
             button.setObjectName("navItem")
             button.setCheckable(True)
             button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -336,7 +340,7 @@ class MainWindow(QMainWindow):
         footer.setSpacing(8)
         version = QLabel(f"v{__version__}")
         version.setObjectName("tiny")
-        about = QPushButton("Sobre")
+        about = QPushButton(t("menu.about"))
         about.setObjectName("linkButton")
         about.setCursor(Qt.CursorShape.PointingHandCursor)
         about.clicked.connect(self._show_about)
@@ -353,7 +357,7 @@ class MainWindow(QMainWindow):
         layout.setContentsMargins(13, 13, 13, 13)
         layout.setSpacing(9)
 
-        label = QLabel("DISPOSITIVO")
+        label = QLabel(t("device.section"))
         label.setObjectName("devicePanelLabel")
         label_font = QFont(label.font())
         label_font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 1.0)
@@ -362,7 +366,7 @@ class MainWindow(QMainWindow):
 
         self.device_combo = FieldComboBox()
         self.device_combo.setToolTip(
-            "Dispositivos Bluetooth clássicos conhecidos pelo Windows."
+            t("device.tooltip")
         )
         self.device_combo.currentIndexChanged.connect(self._on_device_changed)
         layout.addWidget(self.device_combo)
@@ -375,7 +379,7 @@ class MainWindow(QMainWindow):
         self.scan_button.setIconSize(QSize(17, 17))
         self.scan_button.setFixedSize(38, 38)
         self.scan_button.setToolTip(
-            "Faz uma varredura Bluetooth de 8 segundos para encontrar os fones."
+            t("device.scan_tooltip")
         )
         self.scan_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.scan_button.clicked.connect(self._scan_devices)
@@ -386,7 +390,7 @@ class MainWindow(QMainWindow):
         self.refresh_button.setIconSize(QSize(17, 17))
         self.refresh_button.setFixedSize(38, 38)
         self.refresh_button.setToolTip(
-            "Atualiza a lista de dispositivos pareados sem fazer varredura."
+            t("device.refresh_tooltip")
         )
         self.refresh_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.refresh_button.clicked.connect(lambda: self._refresh_devices())
@@ -396,7 +400,7 @@ class MainWindow(QMainWindow):
         row.addStretch(1)
         layout.addLayout(row)
 
-        self.connect_button = QPushButton("Conectar")
+        self.connect_button = QPushButton(t("device.connect"))
         self.connect_button.setObjectName("primary")
         self.connect_button.setMinimumHeight(38)
         self.connect_button.setCursor(Qt.CursorShape.PointingHandCursor)
@@ -404,7 +408,7 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.connect_button)
 
         self.device_hint = QLabel(
-            "Pareie pelo Windows ou use freebuds pair se o fone não aparecer."
+            t("device.hint")
         )
         self.device_hint.setObjectName("tiny")
         self.device_hint.setWordWrap(True)
@@ -436,9 +440,9 @@ class MainWindow(QMainWindow):
 
         heading = QVBoxLayout()
         heading.setSpacing(2)
-        self.page_title = QLabel("Visão geral")
+        self.page_title = QLabel(_page_title("overview"))
         self.page_title.setObjectName("pageTitle")
-        self.page_subtitle = QLabel("Selecione um fone para começar")
+        self.page_subtitle = QLabel(t("page.overview.subtitle_disconnected"))
         self.page_subtitle.setObjectName("pageSubtitle")
         heading.addWidget(self.page_title)
         heading.addWidget(self.page_subtitle)
@@ -450,7 +454,7 @@ class MainWindow(QMainWindow):
         self.status_dot = QFrame()
         self.status_dot.setObjectName("statusDot")
         self.status_dot.setProperty("state", "off")
-        self.connection_pill = QLabel("Desconectado")
+        self.connection_pill = QLabel(t("status.disconnected"))
         self.connection_pill.setObjectName("statusPill")
         self.connection_pill.setProperty("state", "off")
         status.addWidget(self.status_dot, 0, Qt.AlignmentFlag.AlignVCenter)
@@ -477,9 +481,9 @@ class MainWindow(QMainWindow):
         layout = QHBoxLayout(column)
         layout.setContentsMargins(32, 0, 32, 0)
         layout.setSpacing(12)
-        self.footer_status = QLabel("Pronto")
+        self.footer_status = QLabel(t("status.ready"))
         self.footer_status.setObjectName("statusText")
-        meta = QLabel("SPP · RFCOMM")
+        meta = QLabel(t("status.spp"))
         meta.setObjectName("statusText")
         layout.addWidget(self.footer_status, 1)
         layout.addWidget(meta)
@@ -513,11 +517,11 @@ class MainWindow(QMainWindow):
         scroll, column = self._make_page()
         column.addWidget(self._build_hero())
 
-        column.addWidget(make_section_label("Som"))
+        column.addWidget(make_section_label(t("sections.sound")))
         self.anc_panel = AncPanel()
         column.addWidget(self.anc_panel)
 
-        column.addWidget(make_section_label("Atalhos"))
+        column.addWidget(make_section_label(t("sections.shortcuts")))
         shortcuts = QGridLayout()
         shortcuts.setHorizontalSpacing(20)
         shortcuts.setVerticalSpacing(16)
@@ -525,10 +529,10 @@ class MainWindow(QMainWindow):
         shortcuts.setColumnStretch(1, 1)
         self.quick_tiles: dict[str, QuickTile] = {}
         specs = (
-            ("sound", "HUAWEI SOUND", "sound", "audio"),
-            ("spatial", "Áudio espacial", "spatial", "audio"),
-            ("head", "Controle de cabeça", "head_control", "gestures"),
-            ("wear", "Detecção de uso", "wear_detection", "connection"),
+            ("sound", t("audio.sound_title"), "sound", "audio"),
+            ("spatial", t("audio.spatial_title"), "spatial", "audio"),
+            ("head", t("gestures.head_title"), "head_control", "gestures"),
+            ("wear", t("connection.wear_title"), "wear_detection", "connection"),
         )
         for index, (key, title, kind, page_key) in enumerate(specs):
             tile = QuickTile(title, "—", kind)
@@ -539,7 +543,7 @@ class MainWindow(QMainWindow):
             shortcuts.addWidget(tile, index // 2, index % 2)
         column.addLayout(shortcuts)
 
-        column.addWidget(make_section_label("Bateria"))
+        column.addWidget(make_section_label(t("sections.battery")))
         self.battery_panel = BatteryOverview()
         column.addWidget(self.battery_panel)
         column.addStretch(1)
@@ -555,15 +559,15 @@ class MainWindow(QMainWindow):
 
         info = QVBoxLayout()
         info.setSpacing(5)
-        self.hero_eyebrow = QLabel("HUAWEI FREEBUDS")
+        self.hero_eyebrow = QLabel(t("hero.eyebrow"))
         self.hero_eyebrow.setObjectName("heroEyebrow")
         eyebrow_font = QFont(self.hero_eyebrow.font())
         eyebrow_font.setWeight(QFont.Weight.DemiBold)
         eyebrow_font.setLetterSpacing(QFont.SpacingType.AbsoluteSpacing, 1.2)
         self.hero_eyebrow.setFont(eyebrow_font)
-        self.hero_title = QLabel("FreeBuds")
+        self.hero_title = QLabel(t("hero.title_default"))
         self.hero_title.setObjectName("heroTitle")
-        self.hero_subtitle = QLabel("Selecione o fone e conecte")
+        self.hero_subtitle = QLabel(t("hero.subtitle_disconnected"))
         self.hero_subtitle.setObjectName("heroSubtitle")
         info.addWidget(self.hero_eyebrow)
         info.addWidget(self.hero_title)
@@ -579,11 +583,11 @@ class MainWindow(QMainWindow):
         battery_row.addWidget(self.hero_battery, 0, Qt.AlignmentFlag.AlignBottom)
         battery_text = QVBoxLayout()
         battery_text.setSpacing(2)
-        self.hero_battery_detail = QLabel("Bateria")
+        self.hero_battery_detail = QLabel(t("hero.battery"))
         self.hero_battery_detail.setObjectName("heroBatteryDetail")
-        self.hero_meta = QLabel("Sem sessão")
+        self.hero_meta = QLabel(t("hero.no_session"))
         self.hero_meta.setObjectName("tiny")
-        self.hero_charging = QLabel("Carregando")
+        self.hero_charging = QLabel(t("hero.charging"))
         self.hero_charging.setObjectName("chargingBadge")
         self.hero_charging.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
@@ -617,7 +621,7 @@ class MainWindow(QMainWindow):
     def _build_diagnostics_page(self) -> QScrollArea:
         scroll, column = self._make_page()
 
-        column.addWidget(make_section_label("Atividade"))
+        column.addWidget(make_section_label(t("sections.activity")))
         activity = QFrame()
         activity.setObjectName("card")
         activity_layout = QVBoxLayout(activity)
@@ -625,13 +629,13 @@ class MainWindow(QMainWindow):
         activity_layout.setSpacing(12)
         header = QHBoxLayout()
         header.setSpacing(8)
-        title = QLabel("Atividade")
+        title = QLabel(t("activity.title"))
         title.setObjectName("cardTitle")
-        self.toggle_log_button = QPushButton("Recolher")
+        self.toggle_log_button = QPushButton(t("activity.collapse"))
         self.toggle_log_button.setObjectName("ghost")
         self.toggle_log_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.toggle_log_button.clicked.connect(self._toggle_log_view)
-        clear_button = QPushButton("Limpar")
+        clear_button = QPushButton(t("activity.clear"))
         clear_button.setObjectName("ghost")
         clear_button.setCursor(Qt.CursorShape.PointingHandCursor)
         clear_button.clicked.connect(self._clear_log)
@@ -644,17 +648,17 @@ class MainWindow(QMainWindow):
         activity_layout.addWidget(self.log_view)
         column.addWidget(activity)
 
-        column.addWidget(make_section_label("Dispositivo"))
+        column.addWidget(make_section_label(t("sections.device")))
         self.details_panel = DeviceDetailsPanel()
         column.addWidget(self.details_panel)
 
-        column.addWidget(make_section_label("Preferências"))
+        column.addWidget(make_section_label(t("sections.preferences")))
         column.addWidget(self._build_preferences_card())
         column.addStretch(1)
         return scroll
 
     def _build_preferences_card(self) -> FeatureCard:
-        card = FeatureCard("Preferências", "SESSÃO E JANELA")
+        card = FeatureCard(t("preferences.title"), t("preferences.badge"))
         self.interval_combo = FieldComboBox()
         for seconds, label in (
             (15, "15 s"),
@@ -664,25 +668,24 @@ class MainWindow(QMainWindow):
         ):
             self.interval_combo.addItem(label, seconds)
         self.interval_combo.setToolTip(
-            "Leitura de segurança de bateria e ANC. Mudanças feitas no celular "
-            "chegam por notificação, sem esperar este intervalo."
+            t("preferences.poll_subtitle")
         )
         self.interval_combo.setFixedWidth(132)
         card.body.addWidget(
             FeatureRow(
-                "Verificação periódica",
-                "Leitura de segurança de bateria e ANC.",
+                t("preferences.poll_title"),
+                t("preferences.poll_subtitle"),
                 self.interval_combo,
             )
         )
 
         self.close_tray_check = ToggleSwitch()
         self.close_tray_check.setToolTip(
-            "Ao fechar a janela, o aplicativo continua rodando na bandeja."
+            t("preferences.tray_subtitle")
         )
         self.close_tray_row = FeatureRow(
-            "Fechar para a bandeja",
-            "O app continua rodando em segundo plano.",
+            t("preferences.tray_title"),
+            t("preferences.tray_subtitle"),
             self.close_tray_check,
         )
         card.body.addWidget(self.close_tray_row)
@@ -700,15 +703,15 @@ class MainWindow(QMainWindow):
             )
         )
 
-        self.refresh_now_button = QPushButton("Atualizar agora")
+        self.refresh_now_button = QPushButton(t("preferences.refresh_title"))
         self.refresh_now_button.setObjectName("ghost")
         self.refresh_now_button.setIcon(make_refresh_icon(16))
         self.refresh_now_button.setCursor(Qt.CursorShape.PointingHandCursor)
         self.refresh_now_button.clicked.connect(self._refresh_now)
         card.body.addWidget(
             FeatureRow(
-                "Atualizar agora",
-                "Lê bateria e ANC imediatamente.",
+                t("preferences.refresh_title"),
+                t("preferences.refresh_subtitle"),
                 self.refresh_now_button,
             )
         )
@@ -716,25 +719,25 @@ class MainWindow(QMainWindow):
 
     def _build_menu(self) -> None:
         self.menuBar().setNativeMenuBar(False)
-        file_menu = self.menuBar().addMenu("Arquivo")
+        file_menu = self.menuBar().addMenu(t("menu.file"))
 
-        self.refresh_action = QAction("Atualizar agora", self)
+        self.refresh_action = QAction(t("menu.refresh"), self)
         self.refresh_action.setShortcut("Ctrl+R")
         self.refresh_action.triggered.connect(self._refresh_now)
         file_menu.addAction(self.refresh_action)
 
-        self.scan_action = QAction("Procurar dispositivos", self)
+        self.scan_action = QAction(t("menu.scan"), self)
         self.scan_action.triggered.connect(self._scan_devices)
         file_menu.addAction(self.scan_action)
         file_menu.addSeparator()
 
-        self.quit_action = QAction("Sair", self)
+        self.quit_action = QAction(t("menu.quit"), self)
         self.quit_action.setShortcut("Ctrl+Q")
         self.quit_action.triggered.connect(self.quit_application)
         file_menu.addAction(self.quit_action)
 
-        help_menu = self.menuBar().addMenu("Ajuda")
-        about_action = QAction("Sobre", self)
+        help_menu = self.menuBar().addMenu(t("menu.help"))
+        about_action = QAction(t("menu.about"), self)
         about_action.triggered.connect(self._show_about)
         help_menu.addAction(about_action)
 
@@ -755,7 +758,7 @@ class MainWindow(QMainWindow):
         button = self.nav_buttons.get(key)
         if button is not None and not button.isChecked():
             button.setChecked(True)
-        self.page_title.setText(_PAGE_TITLES[key])
+        self.page_title.setText(_page_title(key))
         self._update_page_subtitle()
 
     def _update_page_subtitle(self) -> None:
@@ -763,19 +766,21 @@ class MainWindow(QMainWindow):
         connected = self._session_connected
         if self._current_page == "overview":
             if connected:
-                self.page_subtitle.setText(f"{name}  ·  conectado via Bluetooth")
+                self.page_subtitle.setText(
+                    t("page.overview.subtitle_connected", device=name)
+                )
             elif self._worker is not None:
-                self.page_subtitle.setText("Conectando ao fone…")
+                self.page_subtitle.setText(t("page.overview.subtitle_connecting"))
             else:
-                self.page_subtitle.setText("Selecione um fone para começar")
+                self.page_subtitle.setText(t("page.overview.subtitle_disconnected"))
         elif self._current_page == "diagnostics":
             self.page_subtitle.setText(
-                "Atividade, informações técnicas e preferências da sessão"
+                t("page.diagnostics.subtitle")
             )
         elif connected:
-            self.page_subtitle.setText(f"{name}  ·  ajustes do fone")
+            self.page_subtitle.setText(t("page.features.subtitle_connected", device=name))
         else:
-            self.page_subtitle.setText("Conecte o fone para editar os ajustes")
+            self.page_subtitle.setText(t("page.features.subtitle_disconnected"))
 
     # ------------------------------------------------------------------
     # Estado, listas e conexão
@@ -839,14 +844,14 @@ class MainWindow(QMainWindow):
         except FreeBudsError as exc:
             self._devices = []
             self._populate_devices([], auto_select)
-            self._log(f"Bluetooth indisponível: {exc}", "error")
-            self.footer_status.setText("Não foi possível listar os dispositivos.")
+            self._log(t("log.bluetooth_unavailable", error=exc), "error")
+            self.footer_status.setText(t("device.footer_unavailable"))
             self._update_controls()
             return
         except Exception as exc:  # noqa: BLE001 - limite da UI
             self._devices = []
             self._populate_devices([], auto_select)
-            self._log(f"Erro inesperado ao listar dispositivos: {exc}", "error")
+            self._log(t("log.list_error", error=exc), "error")
             self._update_controls()
             return
 
@@ -857,23 +862,18 @@ class MainWindow(QMainWindow):
         )
         if devices:
             self._log(
-                f"{len(devices)} dispositivo(s) encontrado(s); "
-                f"{huawei} com nome de fone HUAWEI.",
+                t("log.devices_found", count=len(devices), huawei=huawei),
                 "muted",
             )
             self.footer_status.setText(
-                _count_text(
-                    len(devices),
-                    "dispositivo pareado disponível",
-                    "dispositivos pareados disponíveis",
-                )
+                t("device.available", count=len(devices))
             )
         else:
             self._log(
-                "Nenhum dispositivo Bluetooth clássico pareado foi encontrado.",
+                t("log.no_paired"),
                 "warn",
             )
-            self.footer_status.setText("Nenhum dispositivo pareado encontrado.")
+            self.footer_status.setText(t("device.footer_none"))
         self._update_controls()
 
     def _populate_devices(
@@ -884,7 +884,7 @@ class MainWindow(QMainWindow):
         self.device_combo.clear()
         if not devices:
             self.device_combo.addItem(
-                "Nenhum dispositivo pareado encontrado", None
+                t("device.none"), None
             )
             self.device_combo.setEnabled(False)
             self.device_combo.blockSignals(False)
@@ -988,7 +988,7 @@ class MainWindow(QMainWindow):
                 parent=self,
             )
         except (FreeBudsError, ValueError) as exc:
-            self._log(f"Não foi possível iniciar a conexão: {exc}", "error")
+            self._log(t("log.connection_failed", error=exc), "error")
             return
 
         self._last_connection = None
@@ -1008,10 +1008,14 @@ class MainWindow(QMainWindow):
         worker.action_done.connect(self._on_action_done)
         worker.finished.connect(self._on_worker_finished)
 
-        self._set_status("Conectando…", "connecting")
-        self.footer_status.setText(f"Conectando a {name}...")
+        self._set_status(t("status.connecting"), "connecting")
+        self.footer_status.setText(t("device.footer_connecting", name=name))
         self._log(
-            f"Conectando a {name} (canais {', '.join(map(str, channels))})...",
+            t(
+                "log.connection_started",
+                name=name,
+                channels=", ".join(map(str, channels)),
+            ),
             "info",
         )
         self._update_hero()
@@ -1023,11 +1027,11 @@ class MainWindow(QMainWindow):
         if worker is None:
             return
         self._manual_stop = True
-        self._set_status("Desconectando…", "warning")
-        self.footer_status.setText("Encerrando a sessão...")
-        self._log("Desconectando...", "muted")
+        self._set_status(t("status.disconnecting"), "warning")
+        self.footer_status.setText(t("device.footer_stopping"))
+        self._log(t("log.disconnecting"), "muted")
         self.connect_button.setEnabled(False)
-        self.connect_button.setText("Desconectando…")
+        self.connect_button.setText(t("status.disconnecting"))
         worker.stop()
 
     def _on_connected(self, connection: ConnectionInfo) -> None:
@@ -1047,20 +1051,25 @@ class MainWindow(QMainWindow):
                 self._settings, connection.address, connection.channel
             )
         except OSError as exc:
-            self._log(f"Não foi possível salvar o canal: {exc}", "warn")
+            self._log(t("log.settings_save_error", error=exc), "warn")
 
         self.details_panel.update_info(connection.info, connection.channel)
         self.features_panel.update_advanced(None)
         self._update_quick_tiles(None)
-        self._set_status("Conectado", "connected")
+        self._set_status(t("status.connected"), "connected")
         self.footer_status.setText(
-            f"Conectado via RFCOMM {connection.channel}. "
-            "Notificações em tempo real ativas; "
-            f"verificação periódica a cada {self._settings.poll_interval:g} s."
+            t(
+                "device.footer_connected",
+                channel=connection.channel,
+                seconds=f"{self._settings.poll_interval:g}",
+            )
         )
         self._log(
-            f"Conectado a {self._last_device_name or connection.address} "
-            f"no canal {connection.channel}.",
+            t(
+                "log.connected",
+                name=self._last_device_name or connection.address,
+                channel=connection.channel,
+            ),
             "ok",
         )
         self._update_hero()
@@ -1086,27 +1095,34 @@ class MainWindow(QMainWindow):
         self._update_hero()
         self._update_page_subtitle()
         self.footer_status.setText(
-            f"Conectado via RFCOMM {snapshot.channel}. "
-            f"Última leitura: {snapshot.timestamp.strftime('%H:%M:%S')}."
+            t(
+                "device.footer_snapshot",
+                channel=snapshot.channel,
+                time=snapshot.timestamp.strftime("%H:%M:%S"),
+            )
         )
 
         battery_key = _battery_key(snapshot.battery)
         if battery_key != self._last_battery_key:
             self._last_battery_key = battery_key
-            self._log(f"Bateria: {_battery_summary(snapshot.battery)}.", "info")
+            self._log(
+                t("log.battery", summary=_battery_summary(snapshot.battery)),
+                "info",
+            )
 
         anc_key = _anc_key(snapshot.anc)
         if anc_key != self._last_anc_key:
             self._last_anc_key = anc_key
-            self._log(f"ANC: {_anc_summary(snapshot.anc)}.", "ok")
+            self._log(t("log.anc", summary=_anc_summary(snapshot.anc)), "ok")
 
         for warning in snapshot.warnings:
             if warning not in self._last_warnings:
                 self._last_warnings.add(warning)
                 self._log(warning, "warn")
         if snapshot.parser_issues:
-            issue_text = (
-                f"Parser ignorou {len(snapshot.parser_issues)} quadro(s) inválido(s)."
+            issue_text = t(
+                "log.parser_ignored",
+                count=len(snapshot.parser_issues),
             )
             if issue_text not in self._last_warnings:
                 self._last_warnings.add(issue_text)
@@ -1124,7 +1140,7 @@ class MainWindow(QMainWindow):
                 self._log_notification_raw(frame)
                 return
             self._last_anc_key = _anc_key(anc)
-            self._log(f"Notificação de ANC: {_anc_summary(anc)}.", "ok")
+            self._log(t("log.anc_notify", summary=_anc_summary(anc)), "ok")
             return
 
         if frame.command == CMD_BATTERY_NOTIFY:
@@ -1139,7 +1155,10 @@ class MainWindow(QMainWindow):
                 self._log_notification_raw(frame)
                 return
             self._last_battery_key = _battery_key(battery)
-            self._log(f"Notificação de bateria: {_battery_summary(battery)}.", "info")
+            self._log(
+                t("log.battery_notify", summary=_battery_summary(battery)),
+                "info",
+            )
             return
 
         self._log_notification_raw(frame)
@@ -1161,7 +1180,11 @@ class MainWindow(QMainWindow):
         if len(raw) > 160:
             raw = raw[:157] + "..."
         self._log(
-            f"Notificação {frame.command.hex(' ').upper()}: {raw or 'sem TLVs'}.",
+            t(
+                "log.raw_notification",
+                command=frame.command.hex(" ").upper(),
+                raw=raw or t("log.raw_empty"),
+            ),
             "muted",
         )
 
@@ -1173,8 +1196,8 @@ class MainWindow(QMainWindow):
         if message != self._last_error:
             self._last_error = message
             self._log(message, "error")
-        self._set_status("Reconectando…", "warning")
-        self.footer_status.setText("Falha na conexão; tentando novamente.")
+        self._set_status(t("status.reconnecting"), "warning")
+        self.footer_status.setText(t("device.footer_connection_failed"))
         self._update_hero()
         self._update_quick_tiles(None)
         self._update_tray()
@@ -1184,7 +1207,7 @@ class MainWindow(QMainWindow):
         if self.sender() is not self._worker:
             return
         self._anc_busy = False
-        self._log(f"Não foi possível aplicar o ajuste: {message}", "error")
+        self._log(t("log.action_failed", error=message), "error")
         if self._last_snapshot is not None:
             self.anc_panel.update_anc(self._last_snapshot.anc)
             self.features_panel.update_advanced(self._last_snapshot.advanced)
@@ -1194,7 +1217,7 @@ class MainWindow(QMainWindow):
     def _on_action_done(self, label: str) -> None:
         if self.sender() is not self._worker:
             return
-        self._log(f"{label}; confirmação recebida do fone.", "ok")
+        self._log(t("log.action_done", label=label), "ok")
 
     def _on_worker_finished(self) -> None:
         worker = self.sender()
@@ -1203,12 +1226,16 @@ class MainWindow(QMainWindow):
         self._worker = None
         self._session_connected = False
         self._anc_busy = False
-        self._set_status("Desconectado", "off")
+        self._set_status(t("status.disconnected"), "off")
         self.footer_status.setText(
-            "Sessão encerrada." if self._manual_stop else "Desconectado."
+            t("device.footer_session_ended")
+            if self._manual_stop
+            else t("device.footer_disconnected")
         )
         self._log(
-            "Sessão encerrada." if self._manual_stop else "Conexão encerrada.",
+            t("log.session_ended")
+            if self._manual_stop
+            else t("log.connection_ended"),
             "muted",
         )
         self._last_snapshot = None
@@ -1232,7 +1259,7 @@ class MainWindow(QMainWindow):
             self._refresh_devices()
             return
         self._worker.request_refresh()
-        self._log("Atualização solicitada.", "muted")
+        self._log(t("log.refresh_requested"), "muted")
 
     # ------------------------------------------------------------------
     # Ações de ANC e recursos
@@ -1250,12 +1277,9 @@ class MainWindow(QMainWindow):
             return
         self._anc_busy = True
         self._update_controls()
-        label = {
-            0: "Normal",
-            1: "Cancelamento",
-            2: "Transparência",
-        }.get(mode_code, f"modo {mode_code}")
-        self._log(f"Alterando ANC para {label}...", "info")
+        mode_name = {0: "normal", 1: "cancellation", 2: "awareness"}.get(mode_code, "")
+        label = option_label("anc_mode", mode_name, mode_name or f"modo {mode_code}")
+        self._log(t("log.anc_mode_changing", label=label), "info")
         if mode_code == 2:
             self._worker.set_anc_level(2, 2)
         else:
@@ -1271,7 +1295,7 @@ class MainWindow(QMainWindow):
             return
         self._anc_busy = True
         self._update_controls()
-        self._log(f"Alterando nível de ANC para o código {level_code}...", "info")
+        self._log(t("log.anc_level_changing", code=level_code), "info")
         self._worker.set_anc_level(anc.mode_code, level_code)
 
     def _on_anc_adaptive_requested(self) -> None:
@@ -1284,7 +1308,7 @@ class MainWindow(QMainWindow):
             return
         self._anc_busy = True
         self._update_controls()
-        self._log("Ativando o Reconhecimento adaptável...", "info")
+        self._log(t("log.anc_adaptive_activating"), "info")
         self._worker.set_anc_level(2, 4)
 
     def _on_anc_adaptive_level_requested(self, level_code: int) -> None:
@@ -1298,8 +1322,7 @@ class MainWindow(QMainWindow):
         self._anc_busy = True
         self._update_controls()
         self._log(
-            "Ajustando o Reconhecimento adaptável para "
-            f"o nível {level_code + 1} de 11...",
+            t("log.anc_adaptive_level_changing", level=level_code + 1, total=11),
             "info",
         )
         self._worker.set_anc_adaptive_level(level_code)
@@ -1310,7 +1333,7 @@ class MainWindow(QMainWindow):
             return
         self._anc_busy = True
         self._update_controls()
-        self._log(f"Aplicando ajuste: {_feature_action_label(action)}...", "info")
+        self._log(t("log.action_applied", action=_feature_action_label(action)), "info")
         if action == "sound_profile":
             worker.set_sound_profile(int(value))
         elif action == "spatial_mode":
@@ -1347,7 +1370,7 @@ class MainWindow(QMainWindow):
         else:
             self._anc_busy = False
             self._update_controls()
-            self._log(f"Ajuste sem implementação: {action}.", "warn")
+            self._log(t("log.action_unsupported", action=action), "warn")
 
     # ------------------------------------------------------------------
     # Atualização visual
@@ -1355,36 +1378,36 @@ class MainWindow(QMainWindow):
     def _update_hero(self) -> None:
         snapshot = self._last_snapshot
         if not self._session_connected and snapshot is None:
-            self.hero_title.setText("FreeBuds")
-            self.hero_subtitle.setText("Selecione o fone e conecte")
+            self.hero_title.setText(t("hero.title_default"))
+            self.hero_subtitle.setText(t("hero.subtitle_disconnected"))
             self.hero_battery.setText("—")
             self.hero_battery.setStyleSheet("")
-            self.hero_battery_detail.setText("Bateria")
-            self.hero_meta.setText("Sem sessão")
+            self.hero_battery_detail.setText(t("hero.battery"))
+            self.hero_meta.setText(t("hero.no_session"))
             self.hero_charging.hide()
             self.hero_battery_box.hide()
             self.product_hero.set_battery(None, None, False)
             return
 
         name = self._last_device_name or (snapshot.info.model if snapshot else None)
-        display = (name or "FreeBuds").removeprefix("HUAWEI ").strip()
+        display = (name or t("hero.title_default")).removeprefix("HUAWEI ").strip()
         self.hero_title.setText(display)
         if snapshot is not None:
             self.hero_subtitle.setText(
-                f"Conectado via Bluetooth  ·  RFCOMM {snapshot.channel}"
+                t("hero.subtitle_connected", channel=snapshot.channel)
             )
             self.hero_meta.setText(
-                f"Atualizado às {snapshot.timestamp.strftime('%H:%M:%S')}"
+                t("hero.updated", time=snapshot.timestamp.strftime("%H:%M:%S"))
             )
         else:
-            self.hero_subtitle.setText("Conectado  ·  aguardando leitura")
-            self.hero_meta.setText("Aguardando leitura")
+            self.hero_subtitle.setText(t("hero.subtitle_awaiting"))
+            self.hero_meta.setText(t("hero.awaiting"))
 
         battery = snapshot.battery if snapshot else None
         if battery is None:
             self.hero_battery.setText("—")
             self.hero_battery.setStyleSheet("")
-            self.hero_battery_detail.setText("Bateria")
+            self.hero_battery_detail.setText(t("hero.battery"))
             self.hero_charging.hide()
             self.hero_battery_box.hide()
             self.product_hero.set_battery(None, None, False)
@@ -1404,13 +1427,13 @@ class MainWindow(QMainWindow):
 
         details: list[str] = []
         if battery.left is not None:
-            details.append(f"E {battery.left}%")
+            details.append(t("battery.left_short", value=battery.left))
         if battery.right is not None:
-            details.append(f"D {battery.right}%")
+            details.append(t("battery.right_short", value=battery.right))
         if battery.case is not None:
-            details.append(f"Estojo {battery.case}%")
+            details.append(t("battery.case_short", value=battery.case))
         self.hero_battery_detail.setText(
-            "  ·  ".join(details) if details else "Bateria"
+            "  ·  ".join(details) if details else t("hero.battery")
         )
         self.hero_charging.setVisible(battery.charging is True)
 
@@ -1430,25 +1453,33 @@ class MainWindow(QMainWindow):
             for tile in self.quick_tiles.values():
                 tile.set_value("—")
             return
-        profile = SOUND_PROFILES.get(
-            getattr(data, "sound_profile_id", None) or -1
+        profile_id = getattr(data, "sound_profile_id", None)
+        profile_fallback = SOUND_PROFILES.get(
+            profile_id if profile_id is not None else -1, t("common.none")
         )
-        if profile == "Personalizado":
-            custom = getattr(data, "custom_name", None)
-            if custom:
-                profile = f"Personalizado · {custom}"
+        profile = option_label("sound_profile", profile_id, profile_fallback)
+        custom = getattr(data, "custom_name", None)
+        if profile == t("options.sound_profile.custom") and custom:
+            profile = t("audio.custom_profile", name=custom)
         spatial_id = getattr(data, "spatial_mode", None)
-        spatial = SPATIAL_MODES.get(
-            spatial_id if spatial_id is not None else -1, "—"
+        spatial_fallback = SPATIAL_MODES.get(
+            spatial_id if spatial_id is not None else -1, t("common.none")
         )
+        spatial = option_label("spatial_mode", spatial_id, spatial_fallback)
         self.quick_tiles["sound"].set_value(profile or "—")
         self.quick_tiles["spatial"].set_value(spatial)
         self.quick_tiles["head"].set_value(
-            _on_off(getattr(data, "head_control", None), "Ativado", "Desativado")
+            _on_off(
+                getattr(data, "head_control", None),
+                t("common.on"),
+                t("common.off"),
+            )
         )
         self.quick_tiles["wear"].set_value(
             _on_off(
-                getattr(data, "wear_detection", None), "Ativada", "Desativada"
+                getattr(data, "wear_detection", None),
+                t("common.active"),
+                t("common.inactive"),
             )
         )
 
@@ -1463,8 +1494,8 @@ class MainWindow(QMainWindow):
         worker.devices_found.connect(self._on_scan_found)
         worker.failed.connect(self._on_scan_failed)
         worker.finished.connect(self._on_scan_finished)
-        self._log("Procurando dispositivos Bluetooth por 8 segundos...", "info")
-        self.footer_status.setText("Varredura Bluetooth em andamento...")
+        self._log(t("log.scan_started"), "info")
+        self.footer_status.setText(t("device.footer_scanning"))
         self._update_controls()
         worker.start()
 
@@ -1475,22 +1506,17 @@ class MainWindow(QMainWindow):
             1 for device in self._devices if is_huawei_device_name(device.name)
         )
         self._log(
-            f"Varredura concluída: {len(self._devices)} dispositivo(s), "
-            f"{huawei} com nome de fone HUAWEI.",
+            t("log.scan_done", count=len(self._devices), huawei=huawei),
             "ok" if self._devices else "warn",
         )
         self.footer_status.setText(
-            _count_text(
-                len(self._devices),
-                "dispositivo encontrado",
-                "dispositivos encontrados",
-            )
+            t("device.footer_scan_done", count=len(self._devices))
         )
         self._update_controls()
 
     def _on_scan_failed(self, message: str) -> None:
-        self._log(f"Varredura falhou: {message}", "error")
-        self.footer_status.setText("Varredura falhou.")
+        self._log(t("log.scan_failed", error=message), "error")
+        self.footer_status.setText(t("device.footer_scan_failed"))
 
     def _on_scan_finished(self) -> None:
         worker = self._scan_worker
@@ -1519,9 +1545,11 @@ class MainWindow(QMainWindow):
             )
         )
         if connected and self._manual_stop:
-            self.connect_button.setText("Desconectando…")
+            self.connect_button.setText(t("status.disconnecting"))
         else:
-            self.connect_button.setText("Desconectar" if connected else "Conectar")
+            self.connect_button.setText(
+                t("device.disconnect") if connected else t("device.connect")
+            )
         self.connect_button.setObjectName("danger" if connected else "primary")
         self._restyle(self.connect_button)
         self.refresh_now_button.setEnabled(connected and not self._manual_stop)
@@ -1564,7 +1592,7 @@ class MainWindow(QMainWindow):
         if self._worker is not None:
             self._worker.set_poll_interval(float(value))
         self._save_settings()
-        self._log(f"Intervalo de atualização: {value} s.", "muted")
+        self._log(t("log.interval", seconds=value), "muted")
 
     def _on_close_to_tray_changed(self, checked: bool) -> None:
         self._settings.close_to_tray = checked
@@ -1591,7 +1619,7 @@ class MainWindow(QMainWindow):
         try:
             self._settings_store.save(self._settings)
         except OSError as exc:
-            self._log(f"Não foi possível salvar as preferências: {exc}", "warn")
+            self._log(t("log.settings_save_error", error=exc), "warn")
 
     def _clear_log(self) -> None:
         self.log_view.clear()
@@ -1599,7 +1627,9 @@ class MainWindow(QMainWindow):
     def _toggle_log_view(self) -> None:
         visible = not self.log_view.isVisible()
         self.log_view.setVisible(visible)
-        self.toggle_log_button.setText("Recolher" if visible else "Expandir")
+        self.toggle_log_button.setText(
+            t("activity.collapse") if visible else t("activity.expand")
+        )
 
     def _log(self, message: str, level: str = "info") -> None:
         self.log_view.log(message, level)
@@ -1615,15 +1645,8 @@ class MainWindow(QMainWindow):
     def _show_about(self) -> None:
         QMessageBox.about(
             self,
-            "Sobre o FreeBuds Client",
-            f"<b>FreeBuds Client</b> {__version__}<br><br>"
-            "Cliente desktop não oficial para HUAWEI FreeBuds, em português.<br>"
-            "Leitura de bateria e controle de ANC por SPP/RFCOMM.<br>"
-            "Ajustes de áudio, gestos e conexão validados no FreeBuds Pro 5.<br>"
-            "Multiponto, efeitos espaciais, tons do estojo e deslizar são "
-            "somente leitura.<br><br>"
-            "Protocolo validado por capturas Bluetooth e sujeito a variações "
-            "entre modelos e firmwares.",
+            t("about.title"),
+            t("about.body", version=__version__),
         )
 
     # ------------------------------------------------------------------
@@ -1665,8 +1688,8 @@ class MainWindow(QMainWindow):
             self.hide()
             if not self._tray_notice_shown:
                 self._tray.notify(
-                    "FreeBuds Client",
-                    "O aplicativo continua rodando na bandeja do sistema.",
+                    t("app.name"),
+                    t("tray.notify_body"),
                 )
                 self._tray_notice_shown = True
             return
@@ -1697,4 +1720,4 @@ _FEATURE_ACTION_LABELS = {
 
 
 def _feature_action_label(action: str) -> str:
-    return _FEATURE_ACTION_LABELS.get(action, action)
+    return t(f"actions.{action}", default=_FEATURE_ACTION_LABELS.get(action, action))

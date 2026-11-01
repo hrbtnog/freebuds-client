@@ -9,57 +9,50 @@ from PySide6.QtGui import QAction
 from PySide6.QtWidgets import QMenu, QSystemTrayIcon, QWidget
 
 from ..core.client import DeviceSnapshot
+from .i18n import option_label, t
 from .icons import make_tray_icon
-
-_ANC_LABELS = {
-    "normal": "Normal",
-    "cancellation": "Cancelamento",
-    "awareness": "Transparência",
-}
 
 
 def _battery_text(snapshot: DeviceSnapshot | None) -> str:
     if snapshot is None or snapshot.battery is None:
-        return "Bateria: —"
+        return t("tray.battery_empty")
     battery = snapshot.battery
     parts: list[str] = []
     if battery.left is not None:
-        parts.append(f"E {battery.left}%")
+        parts.append(t("battery.left_short", value=battery.left))
     if battery.right is not None:
-        parts.append(f"D {battery.right}%")
+        parts.append(t("battery.right_short", value=battery.right))
     if battery.case is not None:
-        parts.append(f"Estojo {battery.case}%")
+        parts.append(t("battery.case_short", value=battery.case))
     if not parts and battery.global_level is not None:
         parts.append(f"{battery.global_level}%")
-    return "Bateria: " + (" · ".join(parts) if parts else "—")
+    content = " · ".join(parts) if parts else t("common.none")
+    return t("tray.battery", value=content)
 
 
 def _anc_text(snapshot: DeviceSnapshot | None) -> str:
     if snapshot is None or snapshot.anc is None:
-        return "ANC: —"
+        return t("tray.anc_empty")
     anc = snapshot.anc
-    label = _ANC_LABELS.get(anc.mode or "")
-    if label is None:
-        label = f"Modo {anc.mode_code}" if anc.mode_code is not None else "Desconhecido"
+    raw_mode = anc.mode or ""
+    label = option_label("anc_mode", raw_mode, raw_mode.capitalize() or t("common.unknown"))
+    if anc.mode_code is not None and not anc.mode:
+        label = t("anc.summary_unknown_mode", code=anc.mode_code)
     if anc.mode == "normal":
-        return f"ANC: {label}"
+        return t("tray.anc", value=label)
     if anc.mode_code == 2 and anc.level_code == 4:
         if anc.adaptive_level is not None:
-            return f"ANC: {label} (adaptável {anc.adaptive_level + 1}/11)"
-        return f"ANC: {label} (adaptável)"
+            return t(
+                "tray.anc",
+                value=t("anc.summary_adaptive_level", mode=label, level=anc.adaptive_level + 1),
+            )
+        return t("tray.anc", value=t("anc.summary_adaptive", mode=label))
     if anc.level:
-        level = {
-            "normal": "Normal",
-            "comfort": "Conforto",
-            "ultra": "Ultra",
-            "dynamic": "Dinâmico",
-            "voice_boost": "Realce de voz",
-            "adaptive": "Reconhecimento adaptável",
-        }.get(anc.level, anc.level)
-        return f"ANC: {label} ({level})"
+        level_label = option_label("anc_level", anc.level, anc.level.capitalize())
+        return t("tray.anc", value=t("anc.summary_level", mode=label, level=level_label))
     if anc.level_code is not None:
-        return f"ANC: {label} (código {anc.level_code})"
-    return f"ANC: {label}"
+        return t("tray.anc", value=t("anc.summary_level_code", mode=label, code=anc.level_code))
+    return t("tray.anc", value=label)
 
 
 class TrayController(QObject):
@@ -81,18 +74,20 @@ class TrayController(QObject):
         self.tray = QSystemTrayIcon(
             make_tray_icon(None, None, connected=False), self
         )
-        self.tray.setToolTip("FreeBuds Client — desconectado")
+        self.tray.setToolTip(
+            t("tray.tooltip_disconnected", name=t("app.name"))
+        )
 
         self.menu = QMenu()
-        self.open_action = QAction("Abrir FreeBuds Client", self.menu)
-        self.status_action = QAction("Desconectado", self.menu)
+        self.open_action = QAction(t("tray.open"), self.menu)
+        self.status_action = QAction(t("tray.status_disconnected"), self.menu)
         self.status_action.setEnabled(False)
-        self.battery_action = QAction("Bateria: —", self.menu)
+        self.battery_action = QAction(t("tray.battery_empty"), self.menu)
         self.battery_action.setEnabled(False)
-        self.anc_action = QAction("ANC: —", self.menu)
+        self.anc_action = QAction(t("tray.anc_empty"), self.menu)
         self.anc_action.setEnabled(False)
-        self.refresh_action = QAction("Atualizar agora", self.menu)
-        self.quit_action = QAction("Sair", self.menu)
+        self.refresh_action = QAction(t("tray.refresh"), self.menu)
+        self.quit_action = QAction(t("tray.quit"), self.menu)
 
         self.menu.addAction(self.open_action)
         self.menu.addSeparator()
@@ -144,7 +139,7 @@ class TrayController(QObject):
         anc_text = _anc_text(snapshot)
         name = device_name or (
             snapshot.info.model if snapshot is not None else None
-        ) or "FreeBuds"
+        ) or t("hero.title_default")
 
         if connected and snapshot is not None:
             battery = snapshot.battery
@@ -161,16 +156,23 @@ class TrayController(QObject):
                     level = min(available) if available else None
             anc_mode = snapshot.anc.mode if snapshot.anc is not None else None
             self.tray.setIcon(make_tray_icon(level, anc_mode, connected=True))
-            self.tray.setToolTip(f"{name}\n{battery_text}\n{anc_text}")
+            self.tray.setToolTip(
+                t(
+                    "tray.tooltip_connected",
+                    name=name,
+                    battery=battery_text,
+                    anc=anc_text,
+                )
+            )
             self.status_action.setText(name)
             self.battery_action.setText(battery_text)
             self.anc_action.setText(anc_text)
         else:
             self.tray.setIcon(make_tray_icon(None, None, connected=False))
-            self.tray.setToolTip(f"{name}\nDesconectado")
-            self.status_action.setText("Desconectado")
-            self.battery_action.setText("Bateria: —")
-            self.anc_action.setText("ANC: —")
+            self.tray.setToolTip(t("tray.tooltip_disconnected", name=name))
+            self.status_action.setText(t("tray.status_disconnected"))
+            self.battery_action.setText(t("tray.battery_empty"))
+            self.anc_action.setText(t("tray.anc_empty"))
 
     def _on_activated(self, reason: QSystemTrayIcon.ActivationReason) -> None:
         if reason in (

@@ -300,7 +300,12 @@
     "action_failed": "Não foi possível aplicar o ajuste: {error}",
     "action_done": "{label}; confirmação recebida do fone.",
     "interval": "Intervalo de atualização: {seconds} s.",
-    "settings_save_error": "Não foi possível salvar as preferências: {error}"
+    "settings_save_error": "Não foi possível salvar as preferências: {error}",
+    "ready": "Pronto. O fone é atualizado por notificações em tempo real. O controle de ANC está habilitado; as demais escritas continuam desativadas.",
+    "anc_mode_changing": "Alterando ANC para {label}...",
+    "anc_level_changing": "Alterando nível de ANC para o código {code}...",
+    "anc_adaptive_activating": "Ativando o Reconhecimento adaptável...",
+    "anc_adaptive_level_changing": "Ajustando o Reconhecimento adaptável para o nível {level} de {total}..."
   },
   "actions": {
     "sound_profile": "perfil HUAWEI Sound",

@@ -13,6 +13,7 @@ from ..core.client import FreeBudsClient
 from ..core.errors import FreeBudsError
 from ..core.models import BluetoothDevice
 from ..core.windows_bt import enumerate_devices
+from .i18n import t
 
 
 class DeviceWorker(QThread):
@@ -60,14 +61,16 @@ class DeviceWorker(QThread):
     def set_anc_mode(self, mode_code: int) -> None:
         """Enfileira uma troca de modo; a escrita acontece na thread do worker."""
 
-        self._actions.put(("anc_mode", mode_code, "Modo de ANC alterado"))
+        self._actions.put(
+            ("anc_mode", mode_code, t("worker.done_anc_mode"))
+        )
         self._wake_event.set()
 
     def set_anc_level(self, mode_code: int, level_code: int) -> None:
         """Enfileira uma troca de nível do modo ativo de ANC."""
 
         self._actions.put(
-            ("anc_level", (mode_code, level_code), "Nível de ANC alterado")
+            ("anc_level", (mode_code, level_code), t("worker.done_anc_level"))
         )
         self._wake_event.set()
 
@@ -75,64 +78,84 @@ class DeviceWorker(QThread):
         """Enfileira o ajuste da intensidade do Reconhecimento adaptável."""
 
         self._actions.put(
-            ("adaptive_level", level_code, "Intensidade adaptável alterada")
+            ("adaptive_level", level_code, t("worker.done_adaptive_level"))
         )
         self._wake_event.set()
 
     def set_sound_profile(self, profile_id: int) -> None:
-        self._enqueue("sound_profile", profile_id, "Perfil HUAWEI Sound alterado")
+        self._enqueue(
+            "sound_profile", profile_id, t("worker.done_sound_profile")
+        )
 
     def set_spatial_mode(self, mode_code: int) -> None:
-        self._enqueue("spatial_mode", mode_code, "Áudio espacial alterado")
+        self._enqueue(
+            "spatial_mode", mode_code, t("worker.done_spatial_mode")
+        )
 
     def set_adaptive_volume(self, enabled: bool) -> None:
-        self._enqueue("adaptive_volume", enabled, "Volume adaptável alterado")
+        self._enqueue(
+            "adaptive_volume", enabled, t("worker.done_adaptive_volume")
+        )
 
     def set_conversation_awareness(self, enabled: bool) -> None:
         self._enqueue(
             "conversation_awareness",
             enabled,
-            "Reconhecimento de conversa alterado",
+            t("worker.done_conversation_awareness"),
         )
 
     def set_one_earbud_anc(self, enabled: bool) -> None:
         self._enqueue(
-            "one_earbud_anc", enabled, "ANC com um fone alterado"
+            "one_earbud_anc", enabled, t("worker.done_one_earbud_anc")
         )
 
     def set_head_control(self, enabled: bool | None = None) -> None:
-        self._enqueue("head_control", enabled, "Controle de cabeça alterado")
+        self._enqueue(
+            "head_control", enabled, t("worker.done_head_control")
+        )
 
     def set_head_action(self, field: int, action: int) -> None:
-        label = "Aceno com a cabeça alterado" if field == 3 else (
-            "Balançar a cabeça alterado"
+        label = (
+            t("worker.done_head_nod")
+            if field == 3
+            else t("worker.done_head_shake")
         )
         self._enqueue("head_action", (field, action), label)
 
     def set_wear_detection(self, enabled: bool) -> None:
-        self._enqueue("wear_detection", enabled, "Detecção de uso alterada")
+        self._enqueue(
+            "wear_detection", enabled, t("worker.done_wear_detection")
+        )
 
     def set_sound_quality(self, value: int) -> None:
-        self._enqueue("sound_quality", value, "Qualidade do som alterada")
+        self._enqueue(
+            "sound_quality", value, t("worker.done_sound_quality")
+        )
 
     def set_low_latency(self, enabled: bool) -> None:
-        self._enqueue("low_latency", enabled, "Latência baixa alterada")
+        self._enqueue(
+            "low_latency", enabled, t("worker.done_low_latency")
+        )
 
     def set_press_hold(self, side: str, action: int) -> None:
         self._enqueue(
-            "press_hold", (side, action), "Gesto de pressionar e segurar alterado"
+            "press_hold", (side, action), t("worker.done_press_hold")
         )
 
     def set_pinch_hold(self, side: str, action: int) -> None:
         self._enqueue(
-            "pinch_hold", (side, action), "Gesto de pinçar e segurar alterado"
+            "pinch_hold", (side, action), t("worker.done_pinch_hold")
         )
 
     def set_double_tap(self, left: int, right: int) -> None:
-        self._enqueue("double_tap", (left, right), "Toque duplo alterado")
+        self._enqueue(
+            "double_tap", (left, right), t("worker.done_double_tap")
+        )
 
     def set_triple_tap(self, side: str, action: int) -> None:
-        self._enqueue("triple_tap", (side, action), "Toque triplo alterado")
+        self._enqueue(
+            "triple_tap", (side, action), t("worker.done_triple_tap")
+        )
 
     def _enqueue(self, kind: str, payload: object, label: str) -> None:
         self._actions.put((kind, payload, label))
@@ -179,7 +202,9 @@ class DeviceWorker(QThread):
                     client = None
                     if self._stop_event.is_set():
                         break
-                    self.failed.emit(f"Conexão perdida: {exc}")
+                    self.failed.emit(
+                        t("worker.error_connection_lost", error=exc)
+                    )
                     if self._wait(self._retry_interval):
                         break
                     continue
@@ -191,7 +216,7 @@ class DeviceWorker(QThread):
                     client = None
                     if not self._stop_event.is_set():
                         self.failed.emit(
-                            "Conexão perdida durante a leitura. Tentando reconectar."
+                            t("worker.error_connection_lost_reading")
                         )
                     if self._wait(self._retry_interval):
                         break
@@ -201,7 +226,9 @@ class DeviceWorker(QThread):
                     break
         except Exception as exc:  # noqa: BLE001 - limite da thread
             if not self._stop_event.is_set():
-                self.failed.emit(f"Erro inesperado na conexão: {exc}")
+                self.failed.emit(
+                    t("worker.error_unexpected_connection", error=exc)
+                )
         finally:
             if client is not None:
                 client.close()
@@ -329,6 +356,8 @@ class ScanWorker(QThread):
             self.failed.emit(str(exc))
             return
         except Exception as exc:  # noqa: BLE001 - limite da thread
-            self.failed.emit(f"Erro inesperado na varredura: {exc}")
+            self.failed.emit(
+                t("worker.error_scan_unexpected", error=exc)
+            )
             return
         self.devices_found.emit(devices)
