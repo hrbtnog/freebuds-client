@@ -1,214 +1,141 @@
 # FreeBuds Client
 
 [![CI](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml/badge.svg)](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml)
-[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-green)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-Cliente desktop **não oficial** para gerenciar fones HUAWEI FreeBuds no Windows,
-inspirado na ergonomia do Galaxy Buds Client. O objetivo é oferecer bateria,
-controle de ruído, equalizador, gestos, multiponto e testes de hardware sem a
-conta Huawei e sem o HUAWEI AI Life.
+[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md)
 
-> **English:** An unofficial Windows desktop client for HUAWEI FreeBuds. This is
-> a personal project by someone who is not a developer; it is experimental, not
-> affiliated with Huawei, and suggestions/corrections are very welcome.
+An **unofficial** Windows desktop client to manage HUAWEI FreeBuds earbuds, inspired by the ergonomics of Galaxy Buds Client. Its goal is to provide battery levels, noise control, equalizer presets, gestures, multipoint status, and hardware tests without a Huawei account and without HUAWEI AI Life.
 
-## Sobre mim e por que este projeto existe
+---
 
-Eu **não sou programador** e nunca trabalhei com desenvolvimento de software.
-Este é um projeto pessoal de aprendizado: eu queria uma forma de ver a bateria e
-controlar o cancelamento de ruído do meu FreeBuds Pro 5 pelo PC, sem depender do
-celular e sem usar o HUAWEI AI Life.
+## ⚡ Quick Summary (TL;DR)
 
-Vale destacar que a proposta do aplicativo não é substituir a necessidade de um smartphone com o Huawei AI Life ou Huawei Audio Connect para o gerenciamento completo do fone. Recursos como equalização personalizada, configurações da case, função buscar, teste de ajuste das ponteiras e outros ajustes avançados não existem neste projeto por enquanto (e alguns podem nem ser implementados por conta de limitações técnicas).
+If you're just passing by and want the essentials:
 
-A ideia inicial é apenas complementar a experiência de uso, oferecendo um acesso rápido e prático às principais funções diretamente pelo Windows, preenchendo uma lacuna que a própria Huawei não disponibiliza nativamente.
+- **What it is:** A lightweight Windows application (featuring a modern HarmonyOS-inspired GUI and a CLI) to check battery levels and configure HUAWEI FreeBuds directly from your PC.
+- **What it does:**
+  - Displays real-time battery percentages for both earbuds (L/R) and the charging case.
+  - Switches noise control modes (ANC: Cancellation, Off, Awareness/Transparency) and Adaptive Recognition (11 levels).
+  - Configures audio profiles (HUAWEI SOUND), spatial audio, wear detection, and touch/head movement gestures.
+  - Minimizes seamlessly to the system tray.
+  - Supports multiple languages (Portuguese and English with auto-detection and language selector in preferences).
+- **What it DOES NOT do:** It does not replace the official mobile app (it cannot update firmware, provide advanced custom EQ, or find lost earbuds).
+- **Quick start:** Download the ready-to-run executable (`.exe`) from the [Releases](https://github.com/hrbtnog/freebuds-client/releases) page or run from source with Python 3.10+ (`pip install -e ".[ui]"` and then `freebuds-ui`).
+- **Personal project:** A non-profit project developed by an enthusiast with AI assistance. Feedback, issues, and PRs are warmly welcome!
 
-Não é um produto comercial. Não tem suporte oficial, prazo ou garantia. O código
-foi escrito com assistência de IA e testado por mim no hardware que eu tenho.
-Se você encontrar algo estranho, me avise que eu tento corrigir. Estou aberto a
-sugestões, críticas, issues e pull requests. Se você é programador e quiser
-revisar ou apontar erros, será muito bem-vindo. Se você só tem o fone e quer
-testar, também ajuda muito.
+---
 
-## Aviso importante
+## About Me and Why This Project Exists
 
-- **Use por sua conta e risco.** Este software conversa com o fone por Bluetooth
-  e pode alterar configurações. Não há garantia de que funcione em outro modelo,
-  firmware ou revisão de hardware.
-- **Projeto não oficial.** Não é afiliado, patrocinado ou endossado pela Huawei,
-  HONOR ou qualquer fabricante. Marcas e imagens pertencem aos seus donos; veja
-  [`NOTICE.md`](NOTICE.md).
-- **Não faz atualização de firmware** e não tenta contornar pareamento, PIN,
-  passkey ou confirmações de segurança do Windows.
-- **Não publique dados pessoais.** Evite colar endereço Bluetooth completo,
-  serial, capturas HCI ou nomes de dispositivos em issues, prints e PRs.
+I am **not a programmer** and have never worked in software development. This is a personal learning project: I wanted a way to check battery levels and control active noise cancellation on my FreeBuds Pro 5 from my PC without relying on my phone or HUAWEI AI Life.
 
-## Status do projeto
+It's worth highlighting that this application is not intended to fully replace a smartphone with Huawei AI Life or Huawei Audio Connect for comprehensive earbud management. Features such as custom parametric equalizers, charging case sound settings, "Find My Earbuds", ear tip fit tests, and other advanced configurations do not exist here yet (and some may never be implemented due to technical constraints).
 
-> **Status:** Fases 1 e 2 implementadas. O núcleo, a CLI de diagnóstico e a
-> documentação de engenharia reversa foram validados em hardware em
-> **2026-10-21** com um FreeBuds Pro 5 no canal `1`: listagem, handshake, bateria
-> e os três modos de ANC responderam. O nível de transparência `4` foi
-> identificado como **Reconhecimento adaptável**, com 11 níveis; mudanças de ANC
-> chegam como notificações `0x2B2A`. Em **2026-10-23** a UI PySide6 com bandeja
-> foi validada com o fone conectado ao PC e ao celular ao mesmo tempo. A escrita
-> de ANC (`0x2B04`) e as preferências avançadas (HUAWEI SOUND, áudio espacial,
-> volume adaptável, reconhecimento de conversa, controle de cabeça, detecção de uso,
-> qualidade de som, baixa latência, ANC com um fone e gestos configuráveis) foram
-> integradas à interface e validadas no fone com reversão e confirmação por leitura.
-> Em **2026-10-28** a interface foi redesenhada a partir das capturas do HUAWEI
-> Audio Connect, com rail lateral HarmonyOS, páginas, cartões amplos, segment
-> controls e bateria em pastilhas. A UI acorda imediatamente com notificações
-> espontâneas e a suíte conta com **89 testes automatizados passando**.
-> Multiponto e gesto de deslizar permanecem somente leitura por segurança.
-> Este projeto não é afiliado à Huawei e não faz atualização de firmware.
+The initial goal is simply to complement the user experience by offering quick, convenient access to primary controls directly within Windows, filling a gap Huawei does not provide natively on the desktop.
 
-## Documentação
+This is not a commercial product. It comes with no official support, roadmap, or warranty. The code was written with AI assistance and tested on the hardware I own. If you encounter bugs or glitches, feel free to report them so I can try to fix them. Suggestions, constructive feedback, issues, and pull requests are very welcome!
 
-- [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — formato do quadro, CRC, TLVs e
-  comandos conhecidos.
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — camadas, threading e fluxos do
-  `probe` e da UI.
-- [`docs/CAPTURE_GUIDE.md`](docs/CAPTURE_GUIDE.md) — como capturar o tráfego do
-  Android e correlacionar comandos.
-- [`CHECKPOINT.md`](CHECKPOINT.md) — ponto de restauração com o estado atual, a
-  validação em hardware e os próximos passos.
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — como testar, sugerir e enviar mudanças.
-- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — convivência no projeto.
-- [`SECURITY.md`](SECURITY.md) — privacidade e como relatar problemas sensíveis.
-- [`NOTICE.md`](NOTICE.md) — marcas e materiais de terceiros.
-- [`LICENSE`](LICENSE) — licença MIT do código original.
-- [`docs/PUBLISHING.md`](docs/PUBLISHING.md) — passo a passo para publicar no
-  GitHub (útil para o autor e para forks).
+## Important Notice
 
-## Design da interface
+- **Use at your own risk.** This software communicates with your earbuds over Bluetooth and can modify device settings. There is no guarantee it will work on other models, firmware versions, or hardware revisions.
+- **Unofficial project.** Not affiliated with, sponsored by, or endorsed by Huawei, HONOR, or any manufacturer. Trademarks and images belong to their respective owners; see [`NOTICE.md`](NOTICE.md).
+- **No firmware updates:** It does not flash firmware and does not attempt to bypass Windows pairing, PIN, passkey, or security confirmations.
+- **Do not share personal data.** Avoid posting full Bluetooth MAC addresses, serial numbers, HCI packet dumps, or device names in issues, screenshots, and PRs.
 
-As capturas do HUAWEI Audio Connect usadas como referência durante o
-desenvolvimento não fazem parte do repositório (são materiais locais e podem
-conter nomes de dispositivos). O redesenho de 2026-10-28 adapta essa linguagem
-para uma janela desktop:
+## Project Status
 
-- rail lateral fixo com navegação, marca e seleção de dispositivo;
-- conteúdo em coluna central com largura máxima, para não esticar cartões em
-  monitores grandes;
-- cartões de raio 24 px, hero de 28 px e separadores de 1 px;
-- três níveis tipográficos (título de página, título de cartão e texto de apoio),
-  com rótulos de seção em caixa alta e pouco contraste;
-- segment controls com ícone e rótulo para o controle de ruído, chips de nível e
-  switches azuis;
-- azul HUAWEI `#0A59F7` reservado a estado ativo, links e ação primária;
-- ícones de ruído, áudio espacial, equalização e recursos em SVG, dentro das
-  molduras circulares coloridas dos cartões e atalhos; os arquivos finais ficam
-  em `src/freebuds/ui/assets/icons`;
-- popups de seleção com cantos arredondados e largura calculada pelo maior item;
-- pastilhas verticais de bateria com anel, ícone de fone/estojo e porcentagem
-  centralizados, como na tela inicial do app oficial;
-- páginas separadas para Áudio, Gestos, Conexão e Diagnóstico, com o log e as
-  preferências fora do caminho da operação diária.
+> **Status:** Core phases implemented. The communication core, diagnostic CLI, and reverse engineering docs were validated on hardware on **2026-10-21** with a FreeBuds Pro 5 on channel `1`: enumeration, handshake, battery levels, and all three ANC modes responded as expected. Transparency level `4` was identified as **Adaptive Recognition** with 11 steps; ANC status changes arrive via `0x2B2A` push notifications. On **2026-10-23**, the PySide6 tray UI was validated while connected simultaneously to a PC and smartphone. ANC writes (`0x2B04`) and advanced settings (HUAWEI SOUND, spatial audio, adaptive volume, voice boost/conversation detection, head gestures, wear detection, sound quality priority, low latency, and single-bud ANC) were integrated with readback confirmations. On **2026-10-28**, the UI was redesigned following the HUAWEI Audio Connect design language with a HarmonyOS side rail, cards, segment controls, battery pills, and internationalization (EN/PT). The test suite includes **89 automated tests passing**. Multipoint connection and swipe gestures currently remain read-only for safety.
 
-![Visão geral do FreeBuds Client](docs/ui/visao-geral.png)
+## Documentation
 
-Outras telas: [Áudio](docs/ui/audio.png), [Gestos](docs/ui/gestos.png),
-[Conexão](docs/ui/conexao.png), [Diagnóstico](docs/ui/diagnostico.png),
-[Reconhecimento adaptável](docs/ui/adaptavel.png) e
-[estado desconectado](docs/ui/desconectado.png). As capturas usam dados
-sintéticos e a foto ilustrativa do produto. A foto e os ícones de interface são
-materiais de terceiros; veja [`NOTICE.md`](NOTICE.md).
+- [`docs/PROTOCOL.md`](docs/PROTOCOL.md) — Frame structure, CRC16, TLVs, and known command IDs.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — Architectural layers, threading model, CLI probe, and UI workers.
+- [`docs/CAPTURE_GUIDE.md`](docs/CAPTURE_GUIDE.md) — Guide to capturing Android Bluetooth HCI traffic and correlating commands.
+- [`CHECKPOINT.md`](CHECKPOINT.md) — Development state, hardware milestones, and technical notes.
+- [`CONTRIBUTING.md`](CONTRIBUTING.md) — How to test, suggest features, and submit pull requests.
+- [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) — Community guidelines.
+- [`SECURITY.md`](SECURITY.md) — Privacy policies and responsible disclosure.
+- [`NOTICE.md`](NOTICE.md) — Third-party trademarks, visual assets, and licenses.
+- [`LICENSE`](LICENSE) — Project MIT license.
+- [`docs/PUBLISHING.md`](docs/PUBLISHING.md) — Publishing checklist for releases and forks.
 
-## O que já existe
+## Interface Design
 
-- Descoberta e listagem de dispositivos Bluetooth Classic via API nativa do
-  Windows.
-- Pareamento assistido pelo Windows (`BluetoothAuthenticateDeviceEx`), sem
-  contornar PIN, passkey ou confirmação do usuário.
-- Transporte RFCOMM/SPP com tentativa de canais conhecidos (`1` e `16`) e
-  persistência do canal que funcionou.
-- Codec completo do protocolo Huawei: quadro `0x5A`, TLV, CRC16/XMODEM e parser
-  incremental que tolera fragmentação, frames concatenados e lixo.
-- Handshake de identificação (`0x0107`), leitura de bateria (`0x0108`) e leitura
-  de ANC (`0x2B2A`).
-- Controle de ANC por `0x2B04`: modos normal, cancelamento e transparência,
-  níveis de cancelamento/transparência conhecidos e Reconhecimento adaptável com
-  11 níveis, com confirmação e releitura pelo fone.
-- Cliente de alto nível em `core/client.py`, reutilizado pela UI, com conexão por
-  canais, handshake, snapshot, espera por notificações e reconexão.
-- CLI com saída humana ou JSON, `--raw`, `--listen` e decodificação de capturas.
-- UI desktop em PySide6 com rail de navegação no estilo HarmonyOS:
-  **Visão geral**, **Áudio**, **Gestos**, **Conexão** e **Diagnóstico**.
-  A visão geral tem hero com foto transparente e pastilhas de bateria, cartão de
-  controle de ruído com segment control, atalhos e bateria detalhada; as demais
-  páginas usam cartões de ajuste e linhas agrupadas. Inclui log de atividade,
-  polling de segurança e bandeja do sistema.
-- Controle avançado de Áudio: perfis HUAWEI SOUND em grade, áudio espacial
-  (modo e efeito), volume adaptável e reconhecimento de conversa.
-- Controle de Gestos: pressionar e segurar, pinçar e segurar, toque duplo,
-  toque triplo, controle por movimentos de cabeça (aceno e balanço) e visualização
-  de deslizar.
-- Controle de Conexão: prioridade de codec (conexão vs áudio), modo de baixa
-  latência, detecção de uso inteligente, cancelamento com um fone e status de
-  multi-conexão.
-- Atualização em tempo real: o worker acorda quando o fone envia notificações
-  espontâneas (ex.: `0x2B2A` ou mudanças de perfil) e lê um novo snapshot sem
-  esperar o intervalo de polling.
-- Configurações persistentes em `%APPDATA%\FreeBudsClient\settings.json`.
-- Núcleo independente de Qt: a UI consome snapshots sem reimplementar a
-  comunicação.
+The UI adapts the design language from modern mobile interfaces into a comfortable desktop layout:
 
-### Validação em hardware
+- Fixed side rail navigation with branding and device switching;
+- Centered max-width content column so cards don't stretch excessively on ultrawide monitors;
+- Rounded cards (24px radius), hero card (28px), and subtle 1px dividers;
+- Clear typography hierarchy with low-contrast uppercase section titles;
+- Segmented controls with icons for ANC modes, level chips, and status switches;
+- HUAWEI Blue `#0A59F7` reserved for active states, links, and primary actions;
+- High-definition SVG icons within colored circular avatars for features and shortcuts;
+- Battery pills with rings, earbuds/case icons, and centered percentages;
+- Separate tabs for **Overview**, **Audio**, **Gestures**, **Connection**, and **Diagnostics** (keeping logs and preferences neatly organized).
 
-Execuções reais no canal `1` com o FreeBuds Pro 5 reportando modelo interno
-`BTFT0023` e firmware HarmonyOS 7.0.0.350 (F003H003C91):
+![FreeBuds Client Overview](docs/ui/visao-geral.png)
 
-| Item | Resultado |
+Other screens: [Audio](docs/ui/audio.png), [Gestos](docs/ui/gestos.png), [Connection](docs/ui/conexao.png), [Diagnostics](docs/ui/diagnostico.png), [Adaptive Mode](docs/ui/adaptavel.png), and [Disconnected state](docs/ui/desconectado.png).
+
+## Features
+
+- Bluetooth Classic discovery and enumeration using native Windows APIs.
+- Assisted Windows pairing (`BluetoothAuthenticateDeviceEx`) without bypassing security prompts.
+- RFCOMM/SPP transport with fallback to known channels (`1` and `16`) and persistent channel caching.
+- Robust Huawei protocol codec: `0x5A` frames, TLVs, CRC16/XMODEM, and stream parser handling fragmentation and noise.
+- Device identification handshake (`0x0107`), battery polling (`0x0108`), and ANC state reading (`0x2B2A`).
+- Complete ANC control via `0x2B04`: Off, Cancellation (Standard, Comfort, Ultra, Dynamic), Transparency, and Adaptive Recognition slider (1 to 11).
+- High-level client API (`core/client.py`) with background workers, auto-reconnection, and snapshot notifications.
+- Powerful CLI with human-readable and `--json` outputs, raw hex inspection (`--raw`), and live listener (`--listen`).
+- Modern desktop GUI in PySide6 with system tray integration, battery monitoring, and custom theme.
+- Advanced Audio controls: HUAWEI SOUND presets, spatial audio, adaptive volume, and voice enhancement.
+- Gesture customization: Pinch/press and hold, double tap, triple tap, head movement control (nod/shake), and swipe status.
+- Connection management: Codec quality priority, low-latency gaming mode, intelligent wear detection, and multipoint overview.
+- Full internationalization support (Portuguese and English).
+- Persistent user settings stored in `%APPDATA%\FreeBudsClient\settings.json`.
+
+### Hardware Validation
+
+Real runs on channel `1` with FreeBuds Pro 5 reporting internal model `BTFT0023` and firmware HarmonyOS 7.0.0.350 (F003H003C91):
+
+| Item | Result |
 |---|---|
-| Listagem e conexão SPP | OK — dispositivo já pareado, conectado no canal `1` |
-| Handshake `0x0107` | OK — 14 campos retornados |
-| Bateria `0x0108` | OK — global, L/R, estojo e flags |
-| ANC `0x2B2A` | OK no modo normal (`00 00`) |
-| ANC cancelamento | OK — `03 01` = dynamic/cancellation |
-| ANC transparência | OK — `04 02` = Reconhecimento adaptável; posição no parâmetro `2` |
-| Reconhecimento adaptável | OK em 2026-10-23 — 11 níveis (`0x00..0x0A`), seleção, escrita e restauração confirmadas |
-| Escrita de ANC `0x2B04` | OK em 2026-10-23 — modos `00 00`, `01 FF`, `02 02`, `02 04` e níveis de cancelamento/adaptativo; estado restaurado |
-| Recursos avançados (Áudio/Gestos/Conexão) | OK em 2026-10-23 — HUAWEI SOUND, áudio espacial, adaptativo, cabeça, detecção de uso, qualidade, latência e gestos confirmados e restaurados |
-| Notificações espontâneas | OK — pushes de ANC `0x2B2A` acordam o worker imediatamente; `0x2BAC` preservado |
-| UI PySide6 com abas + bandeja | OK em 2026-10-23 com o fone conectado ao PC e celular: hero, abas, switches, chips, combos, reconexão e bandeja |
-| Redesign HarmonyOS (rail, páginas) | OK em 2026-10-28 na renderização offscreen em 1320×880 e 1100×760, nos estados conectado, desconectado e adaptável; falta repetir com o fone |
-| Pareamento assistido do zero | ainda não reexecutado (o fone já estava pareado) |
-| Bateria `0x0127` e `0x2BAC` | `0x0127` pendente; `0x2BAC` observado, mas sem semântica |
+| SPP listing & connection | OK — device already paired, connected on channel `1` |
+| Handshake `0x0107` | OK — 14 fields returned |
+| Battery `0x0108` | OK — global, L/R, charging case, and flags |
+| ANC `0x2B2A` | OK in normal mode (`00 00`) |
+| ANC Cancellation | OK — `03 01` = dynamic/cancellation |
+| ANC Transparency | OK — `04 02` = Adaptive Recognition; position in parameter `2` |
+| Adaptive Recognition | OK on 2026-10-23 — 11 levels (`0x00..0x0A`), selection, write, and restore confirmed |
+| ANC Write `0x2B04` | OK on 2026-10-23 — modes `00 00`, `01 FF`, `02 02`, `02 04` and cancellation/adaptive levels; state confirmed |
+| Advanced features (Audio/Gestures/Connection) | OK on 2026-10-23 — HUAWEI SOUND, spatial audio, adaptive, head gestures, wear detection, quality, latency, and gestures confirmed and restored |
+| Spontaneous notifications | OK — ANC `0x2B2A` pushes wake up worker immediately; `0x2BAC` preserved |
+| PySide6 UI with tabs + tray | OK on 2026-10-23 with earbuds connected to PC and phone: hero, tabs, switches, chips, combos, reconnection, and tray |
+| HarmonyOS Redesign (rail, pages) | OK on 2026-10-28 in offscreen rendering at 1320×880 and 1100×760, in connected, disconnected, and adaptive states; to be repeated with hardware |
+| Assisted pairing from scratch | Not yet re-executed (earbuds were already paired) |
+| Battery `0x0127` and `0x2BAC` | `0x0127` pending; `0x2BAC` observed but semantics unconfirmed |
 
-> A UI também foi exercitada com dados sintéticos e sem rádio Bluetooth: mostra a
-> mensagem de rádio indisponível e continua aberta. A validação de 2026-10-23
-> cobriu o fluxo básico, o adaptável e as novas páginas de recursos; ainda faltam DPI alto,
-> suspensão/retomada do Windows e uma perda de enlace real (o teste de reconexão parou
-> e reiniciou o worker).
+### Pending Hardware Validation
 
-### O que falta validar em hardware
+- High DPI and Windows sleep/resume cycles with the UI connected.
+- Spontaneous notification of adaptive level when adjusted via mobile slider.
+- Battery layouts, charging flags, and notifications on other FreeBuds models.
 
-- DPI alto e ciclos de suspensão/retomada do Windows com a UI conectada.
-- Notificação espontânea do nível adaptativo quando o celular muda o slider.
-- Layouts de bateria, flags de carga e notificações em outros modelos.
+## Why Bluetooth Classic instead of BLE?
 
-## Por que Bluetooth Classic e não BLE?
+FreeBuds expose their proprietary control channel over **SPP/RFCOMM** (Service UUID `00001101-0000-1000-8000-00805F9B34FB`), using `0x5A` frames. While BLE is used by some accessories, it is not the primary control channel for these earbuds. The RFCOMM channel varies across models/firmware (e.g., Pro/Pro 2/Pro 3/Pro 5 and 6i use `1`; 4i and 5i use `16`). The CLI automatically tries known channels and accepts `--channel`.
 
-Os FreeBuds expõem o canal de controle proprietário sobre **SPP/RFCOMM**
-(UUID de serviço `00001101-0000-1000-8000-00805F9B34FB`), com quadros `0x5A`.
-BLE é usado por outros acessórios, mas não é o caminho principal desses fones.
-O canal RFCOMM varia por firmware/modelo (por exemplo, Pro/Pro 2/Pro 3/Pro 5 e
-6i usam `1`; 4i e 5i usam `16`). Por isso a CLI tenta canais conhecidos e aceita
-`--channel`.
+## Requirements
 
-## Requisitos
+- Windows 10/11 with Bluetooth.
+- Earbuds paired to Windows, powered on, and out of the charging case.
 
-- Windows 10/11 com Bluetooth.
-- Fones pareados no Windows, ligados e fora do estojo.
+## For Non-Programmers
 
-## Para quem não é programador
+An official `.exe` is available to download under [Releases](https://github.com/hrbtnog/freebuds-client/releases). You can also build an executable locally following [Build an executable (.exe)](#building-a-standalone-executable-exe). To run the project from source, install Python and follow the steps below.
 
-Há um `.exe` oficial para baixar em Releases. É possível gerar um executável local
-seguindo os passos em [Gerar um executável](#gerar-um-executável-exe). Para usar
-o projeto pelo código-fonte, instale Python e siga os comandos abaixo.
-
-## Instalação local
+## Local Installation
 
 ```powershell
 py -m venv .venv
@@ -216,25 +143,21 @@ py -m venv .venv
 python -m pip install -e ".[dev,ui]"
 ```
 
-Para usar apenas a CLI, sem instalar Qt, troque por `".[dev]"`.
-
-Sem ativar a venv:
-
+To use only the CLI without GUI packages:
 ```powershell
-.\.venv\Scripts\python.exe -m pip install -e ".[dev,ui]"
+.\.venv\Scripts\python.exe -m pip install -e ".[dev]"
 .\.venv\Scripts\freebuds.exe list
 ```
 
-## Gerar um executável (.exe)
+## Building a Standalone Executable (.exe)
 
-No Windows, com o ambiente virtual criado e o PowerShell aberto na pasta do
-projeto, instale a UI e o PyInstaller:
+On Windows, with your virtual environment activated:
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e ".[ui]" pyinstaller
 ```
 
-Crie um pequeno script de entrada para abrir a interface:
+Create an entry launcher:
 
 ```powershell
 @'
@@ -245,133 +168,69 @@ if __name__ == "__main__":
 '@ | Set-Content -Encoding utf8 .\freebuds_ui_launcher.py
 ```
 
-Empacote o aplicativo:
+Bundle into an executable:
 
 ```powershell
 .\.venv\Scripts\python.exe -m PyInstaller --noconfirm --clean --onefile --windowed --name FreeBudsClient --paths .\src --collect-all freebuds .\freebuds_ui_launcher.py
 ```
 
-O executável será criado em `dist\FreeBudsClient.exe`. Esse é um executável
-portátil, não um instalador; teste-o no Windows antes de compartilhar. O script
-`freebuds_ui_launcher.py` é usado durante a geração do `.exe`.
+The executable will be generated at `dist\FreeBudsClient.exe`.
 
-## Uso da CLI
-
-Os exemplos usam o endereço fictício `AA:BB:CC:DD:EE:FF`. Substitua pelo
-endereço real retornado por `freebuds scan` ou `freebuds list`.
+## CLI Usage
 
 ```powershell
-# Versão instalada
+# Installed version
 freebuds --version
 
-# Dispositivos já conhecidos/pareados pelo Windows
+# List devices paired/known by Windows
 freebuds list
 freebuds list --json
 
-# Inclui dispositivos não pareados, fazendo inquiry Bluetooth Classic
+# Scan for non-paired devices (Bluetooth Classic inquiry)
 freebuds scan --seconds 8
 
-# Mostra todos os dispositivos, não só nomes Huawei/HONOR/FreeBuds
+# Scan all Bluetooth devices, not just Huawei/HONOR
 freebuds scan --seconds 8 --all
 
-# Pareamento assistido (o Windows pode exibir um assistente/SSP)
+# Assisted pairing
 freebuds pair AA:BB:CC:DD:EE:FF
 
-# Handshake + bateria + ANC; tenta canais 1 e 16 automaticamente
+# Handshake + Battery + ANC (tries channels 1 and 16 automatically)
 freebuds probe --name "FreeBuds"
 
-# Força um canal, mostra bytes TX/RX e gera JSON
+# Force specific channel, show raw TX/RX bytes, and format output as JSON
 freebuds probe --address AA:BB:CC:DD:EE:FF --channel 1 --json --raw
 
-# Escuta notificações por 15 s depois do snapshot inicial
+# Listen to incoming notifications for 15 seconds after initial snapshot
 freebuds probe --name FreeBuds --listen 15
 
-# Decodifica uma sequência de bytes ou um arquivo de texto hexadecimal
+# Decode raw hex byte string or text file
 freebuds decode "5A0006002B03080100A79D"
 freebuds decode --file capturas/spp.txt
 ```
 
-Observações:
+## UI Usage
 
-- `probe --name` procura apenas dispositivos **já lembrados** pelo Windows. Se o
-  fone ainda não apareceu, rode `scan` primeiro ou use `--address`.
-- `freebuds list` retorna código de saída `2` quando o Windows não expõe um rádio
-  Bluetooth Classic (rádio desligado, ausente ou driver sem suporte).
-- O `probe` é **somente leitura**: não altera ANC, EQ, gestos, multiponto nem
-  configurações. A escrita de ANC está disponível apenas na UI e usa confirmação
-  do fone. Outras escritas só serão habilitadas após validação em cada
-  modelo/firmware.
-- O canal que funcionar é salvo nas preferências, a menos que `--no-save` seja
-  usado.
-
-## Uso da UI
-
-A interface usa PySide6 (extra `ui`) e pode ser aberta de três formas:
+The GUI uses PySide6 (extra `ui`) and can be launched in three ways:
 
 ```powershell
-# Pela CLI
+# CLI command
 freebuds ui
 
-# Script dedicado
+# Dedicated launcher
 freebuds-ui
 
-# Também funciona como módulo
+# As Python module
 python -m freebuds ui
 ```
 
-Para já tentar conectar a um endereço específico:
+To directly target an address:
 
 ```powershell
 freebuds ui --address AA:BB:CC:DD:EE:FF
 ```
 
-O que a UI oferece nesta versão:
-
-- rail lateral com marca, navegação e seleção de dispositivo; a janela abre em
-  **Visão geral** e o tamanho inicial se adapta à área útil do monitor;
-- lista de dispositivos Bluetooth clássicos já conhecidos pelo Windows;
-- botão **Procurar** com inquiry de 8 segundos, sem bloquear a janela;
-- conexão/desconexão pelo cliente de alto nível, com tentativa automática dos
-  canais salvos e conhecidos;
-- **Visão geral**: hero com foto transparente dos fones e pastilhas de bateria,
-  cartão de **controle de ruído** com segment control, atalhos para HUAWEI SOUND,
-  áudio espacial, controle de cabeça e detecção de uso, e bateria detalhada;
-- **Áudio**: perfis HUAWEI SOUND em grade, áudio espacial (modo e efeito), volume
-  adaptável e reconhecimento de conversa;
-- **Gestos**: pressionar e segurar, pinçar e segurar, toques duplos/triplos,
-  controle por movimentos de cabeça e visualização de deslizar;
-- **Conexão**: prioridade de codec, latência baixa, detecção de uso, ANC com um
-  fone e status de multi-conexão;
-- **Diagnóstico**: log de atividade, informações técnicas (modelo, submodelo,
-  firmware, hardware, canal e última leitura) e preferências de polling e bandeja;
-- **controle de ANC**: normal, cancelamento e transparência, com níveis de
-  cancelamento (Padrão, Conforto, Ultra, Dinâmico), de transparência (Realce de
-  voz, Normal) e o **Reconhecimento adaptável** com um slider de 11 níveis
-  (1 = mais ruído, 6 = padrão, 11 = menos ruído);
-- confirmação e restauração do estado após cada escrita; se o fone não responder
-  ou não confirmar o novo estado, a UI mantém o estado anterior e registra o erro;
-- atualização em tempo real por notificações espontâneas; o polling de
-  15/30/60/120 s fica como verificação de segurança em **Diagnóstico**;
-- ícone de bandeja com bateria/ANC, menu para abrir, atualizar ou sair, e opção
-  de fechar a janela mantendo o app em background.
-
-A UI envia ANC (`0x2B04`) e os ajustes de áudio, gestos e conexão confirmados no
-hardware, sempre com restauração em caso de falha. Multiponto, efeitos espaciais,
-tons do estojo e o gesto de deslizar permanecem somente leitura. Os controles
-ficam desabilitados enquanto não há sessão ou enquanto uma ação está em andamento.
-
-A foto do produto em `src/freebuds/ui/assets/freebuds_pro_5.png` foi preparada
-com fundo transparente para esta interface. É uma imagem ilustrativa do produto,
-de propriedade da HUAWEI; substitua por uma foto própria antes de distribuir o
-aplicativo.
-
-Se o Bluetooth estiver desligado, a janela continua funcional e exibe a mensagem
-de rádio indisponível.
-
-Preferências adicionais da UI (`poll_interval` e `close_to_tray`) são salvas no
-mesmo `settings.json` da CLI.
-
-## Testes e verificação
+## Tests & Verification
 
 ```powershell
 .\.venv\Scripts\python.exe -m pytest
@@ -379,147 +238,93 @@ mesmo `settings.json` da CLI.
 .\.venv\Scripts\python.exe -m compileall -q src tests
 ```
 
-A suíte cobre codec/CRC, parser incremental, builders e decodificação, sessão
-RFCOMM simulada, cliente de alto nível, espera por notificações, escrita de ANC,
-configurações, orquestração da CLI e testes offscreen da UI (quando PySide6 está
-instalado), incluindo navegação entre páginas, atalhos da visão geral, o modo
-adaptável e seus 11 níveis. Estado atual: **89 testes**. Nenhum teste automatizado
-substitui a validação com os fones reais.
+The test suite covers frames, parser, command decoders, mock RFCOMM sessions, high-level client flows, and offscreen GUI checks (**89 passing tests**).
 
-O GitHub Actions roda Ruff, compileall e pytest em Windows com Python 3.11 e 3.12
-a cada push e pull request. O workflow está em
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml).
+GitHub Actions runs Ruff, compileall, and pytest on Windows across Python 3.11 and 3.12 for every push and pull request via [`.github/workflows/ci.yml`](.github/workflows/ci.yml).
 
-## Estrutura
+## Project Structure
 
 ```text
 src/freebuds/
   core/
-    protocol.py      # quadro, TLV, CRC, parser incremental (sem Windows)
-    commands.py      # IDs, requests e decodificação semântica
-    client.py        # conexão de alto nível e snapshots para CLI/UI
-    transport.py     # socket RFCOMM/SPP
-    session.py       # correlação request/response e thread de leitura
-    windows_bt.py    # enumeração, inquiry e pareamento no Windows
-    models.py        # dataclasses de estado
+    protocol.py      # Frame, TLV, CRC, incremental parser
+    commands.py      # Command IDs, requests, and semantic decoding
+    client.py        # High-level client and snapshots for CLI/UI
+    transport.py     # RFCOMM/SPP socket transport
+    session.py       # Request/response correlation & reader thread
+    windows_bt.py    # Windows Bluetooth Classic enumeration & inquiry
+    models.py        # State dataclasses
   config/
-    settings.py      # preferências persistentes
+    settings.py      # Persistent user settings
   cli/
-    app.py           # CLI
+    app.py           # CLI commands
   ui/
-    app.py           # QApplication e entrada
-    main_window.py   # janela principal, rail e páginas
-    worker.py        # threads de conexão/polling, notificações e varredura
-    widgets.py       # hero, bateria, ANC, cartões, linhas e log
-    tray.py          # ícone e menu da bandeja
-    theme.py         # stylesheet HarmonyOS
-    icons.py         # marca, bandeja, navegação e fallback
-    svg_icons.py     # renderização e tintura dos SVGs de recursos
-    assets/          # foto transparente do produto e icons/*.svg
+    app.py           # QApplication entry point
+    main_window.py   # Main window, navigation rail, and page layouts
+    worker.py        # Connection, polling, and background threads
+    widgets.py       # Hero view, battery pills, ANC cards, controls, and logs
+    tray.py          # System tray icon and context menu
+    theme.py         # HarmonyOS dark stylesheet
+    icons.py         # Branding, tray, and navigation icons
+    svg_icons.py     # SVG rendering and tinting
+    assets/          # Visual assets and icons/*.svg
 docs/
   ARCHITECTURE.md
   PROTOCOL.md
   CAPTURE_GUIDE.md
   PUBLISHING.md
-  ui/                # capturas sintéticas usadas no README
+  ui/                # UI screenshots used in README
 tests/
 ```
 
-## Limitações conhecidas
+## Known Limitations
 
-- O protocolo e os IDs foram mapeados por pesquisa pública (OpenFreebuds,
-  LibreBuds, mmk.pw, Gadgetbridge) e confirmados parcialmente no FreeBuds Pro 5.
-  A disponibilidade de cada campo ainda varia por modelo e firmware.
-- A leitura de bateria via `0x0108` é a principal; alguns firmwares podem enviar
-  notificações `0x0127` em vez de responder de forma síncrona.
-- A carga por componente (`param 3` do `0x0108`) é apresentada apenas quando o
-  payload tem o formato esperado. Caso contrário, o valor bruto é preservado e a
-  UI não deve inventar estados. No FreeBuds Pro 5 os três bytes vieram `01`, mas
-  o mapeamento por componente não foi confirmado.
-- Os campos `0x02`, `0x19`, `0x1B`, `0x1D`, `0x1E`, `0x21` e `0x22` do
-  `0x0107`, os parâmetros `4`–`6` da bateria e a notificação `0x2BAC` ainda não
-  têm significado confirmado; são preservados como brutos.
-- Os três modos de ANC, os níveis de cancelamento e os 11 níveis do
-  Reconhecimento adaptável foram testados em hardware. A posição adaptativa usa
-  o TLV `4` (`0x00..0x0A`) e a interface a apresenta como `1..11`; o valor bruto
-  `0x05` corresponde ao padrão `6`. A escrita só é aceita com confirmação e
-  releitura do fone.
-- O pareamento usa a UI/SSP do Windows. Não há tentativa de contornar prompts de
-  segurança.
-- O canal RFCOMM é fixo por modelo na implementação atual; uma consulta SDP
-  dinâmica seria mais robusta.
-- A UI escreve ANC e os ajustes de áudio/gestos/conexão confirmados no Pro 5.
-  O fluxo de conexão e leitura foi validado com o fone conectado em 2026-10-23;
-  ainda faltam DPI alto, suspensão/retomada e perda real de enlace.
-- O polling de segurança padrão é de 30 segundos, mas mudanças de ANC/bateria
-  chegam por notificação e são aplicadas imediatamente. A reconexão tenta
-  novamente a cada 12 segundos; a bandeja pode não estar disponível em sessões
-  remotas, e nesse caso a janela fecha normalmente.
-- Áudio espacial, HUAWEI SOUND, áudio adaptável, gestos e conexão foram
-  implementados e validados no Pro 5; multiponto e o gesto de deslizar continuam
-  somente leitura. Outros modelos/firmwares podem não aceitar os mesmos comandos.
-- Não há suporte a atualização de firmware, e ele não será implementado por
-  engenharia reversa.
+- Protocol and IDs were reverse-engineered from public research (OpenFreebuds, LibreBuds, mmk.pw, Gadgetbridge) and validated on FreeBuds Pro 5. Field availability varies across models/firmware.
+- Battery reading via `0x0108` is primary; some firmware versions send `0x0127` push notifications instead.
+- Component charging status (`param 3` of `0x0108`) is only displayed when payload format matches expected specifications.
+- Fields `0x02`, `0x19`, `0x1B`, `0x1D`, `0x1E`, `0x21`, and `0x22` from `0x0107`, parameters `4`–`6` of battery response, and notification `0x2BAC` do not have confirmed semantics yet; they are stored as raw bytes.
+- ANC modes, cancellation levels, and 11 Adaptive Recognition steps were tested in hardware. Adaptive position uses TLV `4` (`0x00..0x0A`) displayed in UI as `1..11` (raw `0x05` = default `6`).
+- Pairing relies on Windows native UI/SSP; security prompts are not bypassed.
+- RFCOMM channel is currently fixed per model; SDP lookup would be more resilient.
+- UI writes ANC, audio, gesture, and connection settings confirmed on Pro 5.
+- Default safety polling interval is 30 seconds, though changes arrive via immediate notifications. Reconnection retries every 12 seconds.
+- Spatial audio, HUAWEI SOUND, adaptive volume, gestures, and connection priority were implemented on Pro 5; multipoint and swipe remain read-only.
+- Firmware updating is not supported and will not be reverse-engineered.
 
-## Como contribuir e enviar sugestões
+## How to Contribute
 
-Este projeto é aberto a sugestões, correções e pull requests. Eu não tenho
-compromisso de prazo e respondo quando consigo, mas toda ajuda é bem-vinda.
+This project welcomes suggestions, fixes, and pull requests!
 
-- **Encontrou um problema?** Abra uma issue usando o template de bug. Inclua
-  modelo do fone, firmware, versão do Windows, o que você fez e o que aconteceu.
-- **Tem uma ideia?** Use o template de sugestão. Não precisa saber programar para
-  sugerir uma melhoria de uso, texto ou comportamento.
-- **Quer enviar código?** Leia [`CONTRIBUTING.md`](CONTRIBUTING.md), rode os
-  testes e descreva o hardware em que você testou.
-- **Não publique dados pessoais** em issues, prints ou PRs: endereço Bluetooth
-  completo, serial, capturas HCI, nomes de dispositivos ou dados da sua rotina.
-- **Se você é desenvolvedor**, uma revisão de código, de threading/Qt ou do
-  protocolo vale muito. Se você não é, sua experiência como usuário também conta.
+- **Found an issue?** Open a bug report including earbud model, firmware revision, Windows version, and logs.
+- **Have an idea?** Submit a feature suggestion; no programming knowledge is required.
+- **Want to contribute code?** Check [`CONTRIBUTING.md`](CONTRIBUTING.md), run tests, and open a PR.
+- **Do not share personal data** in issues, screenshots, or PRs.
 
-Ajudas especialmente úteis: testar em outros modelos/firmwares, DPI alto,
-suspensão/retomada, perda real de enlace, instalador `.exe`, acessibilidade e
-traduções.
+## Security & Scope
 
-## Segurança e escopo
+- Use only with hardware you own.
+- Never publish complete Bluetooth addresses or serial numbers without redacting.
+- Always start with read-only commands. Any write command must be verified by packet captures and tested with a safe revert path.
+- Review [`SECURITY.md`](SECURITY.md) before submitting logs.
 
-- Use o projeto apenas com dispositivos seus.
-- Não publique endereços Bluetooth completos, seriais ou capturas com dados
-  pessoais sem redigir.
-- Comece sempre por leituras. Qualquer comando de escrita deve ser confirmado
-  por captura e testado com uma forma de reverter.
-- Não replique comandos de firmware.
-- Leia também [`SECURITY.md`](SECURITY.md) antes de abrir uma issue com logs.
+## Next Steps
 
-## Próximos passos
+1. Validate High DPI, Windows sleep/resume cycles, and reconnects with the UI open.
+2. Observe spontaneous adaptive level notification when moved by smartphone.
+3. Observe battery notifications and test `--listen` on other firmware versions.
+4. Expand hardware validation to other models/firmware and update `docs/PROTOCOL.md`.
 
-1. Validar DPI alto, suspensão/retomada e reconexão após perda real de enlace
-   com a UI conectada.
-2. Observar a notificação espontânea do nível adaptativo quando o slider é
-   movido pelo celular e confirmar a atualização imediata da UI.
-3. Observar notificações de bateria e testar `--listen` em outros firmwares para
-   confirmar se eles usam `0x2B03` em vez do `0x2B2A` espontâneo.
-4. Repetir a validação em outros modelos/firmwares e preencher a tabela de
-   `docs/PROTOCOL.md`.
+## License
 
-## Licença
+This project's original code is licensed under the **MIT License** — see [`LICENSE`](LICENSE). Product photos, third-party icons, and manufacturer trademarks belong to their respective owners; see [`NOTICE.md`](NOTICE.md).
 
-O código original deste repositório está sob a licença **MIT** — veja
-[`LICENSE`](LICENSE). A licença não cobre a foto do produto, os ícones de
-interface, marcas ou outros materiais de terceiros; veja [`NOTICE.md`](NOTICE.md).
-Se você é titular de algum material usado aqui e quer que ele seja removido,
-abra uma issue.
-
-## Referências e agradecimentos
+## References & Acknowledgments
 
 - OpenFreebuds — https://github.com/melianmiko/OpenFreebuds
 - LibreBuds — https://github.com/librebuds/librebuds
-- Protocolo FreeBuds 4i — https://mmk.pw/en/posts/freebuds-4i-proto/
+- FreeBuds 4i Protocol — https://mmk.pw/en/posts/freebuds-4i-proto/
 - Freebuds playground — https://gist.github.com/melianmiko/02f7c6a550808e38d9b6760fb688e125
 - Gadgetbridge (FreeBuds) — https://codeberg.org/Freeyourgadget/Gadgetbridge
-- GalaxyBudsClient - https://github.com/timschneeb/GalaxyBudsClient
+- GalaxyBudsClient — https://github.com/timschneeb/GalaxyBudsClient
 
-Obrigado a quem testou, abriu issues e apontou erros. Este projeto não existiria
-sem a documentação pública desses projetos e sem as pessoas que responderam
-perguntas em fóruns. Se você encontrar este repositório e quiser melhorar algo,
-sinta-se em casa para abrir uma issue — mesmo que seja só uma sugestão de texto.
+Thank you to everyone who tested, reported issues, and shared protocol research!
