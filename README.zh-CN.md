@@ -3,7 +3,7 @@
 [![CI](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml/badge.svg)](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml)
 [![许可证: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md) | [**Español**](README.es.md) | [**Русский**](README.ru.md) | [**简体中文**](README.zh-CN.md)
+[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md) | [**Español**](README.es.md) | [**Русский**](README.ru.md) | [**简体中文**](README.zh-CN.md) | [**Français**](README.fr.md) | [**Deutsch**](README.de.md) | [**日本語**](README.ja.md)
 
 > ⚠️ **注意：** 本文档由人工智能 (AI) 翻译，可能存在不准确或错误之处。原始参考文档请参阅[英文版](README.md)和[葡萄牙语版](README.pt-BR.md)。
 

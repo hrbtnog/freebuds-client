@@ -694,7 +694,7 @@ class MainWindow(QMainWindow):
         for code, name in language_options():
             self.language_combo.addItem(name, code)
         self.language_combo.setToolTip(t("preferences.language_subtitle"))
-        self.language_combo.setFixedWidth(132)
+        self.language_combo.setFixedWidth(145)
         card.body.addWidget(
             FeatureRow(
                 t("preferences.language_title"),

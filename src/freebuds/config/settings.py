@@ -20,6 +20,7 @@ from ..core.util import normalize_address
 APP_DIR_NAME = "FreeBudsClient"
 SETTINGS_FILE_NAME = "settings.json"
 SETTINGS_VERSION = 1
+SUPPORTED_LANGUAGES = ("pt", "en", "es", "ru", "zh", "fr", "de", "ja")
 
 
 def default_settings_path() -> Path:
@@ -84,10 +85,9 @@ class Settings:
         language = data.get("language")
         if isinstance(language, str):
             normalized = language.strip().lower().replace("_", "-")
-            if normalized.startswith("en"):
-                settings.language = "en"
-            elif normalized.startswith("pt"):
-                settings.language = "pt"
+            prefix = normalized.split("-")[0]
+            if prefix in SUPPORTED_LANGUAGES:
+                settings.language = prefix
 
         color = data.get("earbud_color")
         if isinstance(color, str) and color in ("sand", "white", "grey", "blue"):

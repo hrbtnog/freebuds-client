@@ -83,3 +83,15 @@ def test_remember_channel_persists(tmp_path) -> None:
     loaded = store.load()
     assert loaded.last_device == "AA:BB:CC:DD:EE:FF"
     assert loaded.last_channels["AA:BB:CC:DD:EE:FF"] == 16
+
+
+def test_settings_language_persistence(tmp_path) -> None:
+    from freebuds.config.settings import SUPPORTED_LANGUAGES
+
+    for lang in SUPPORTED_LANGUAGES:
+        path = tmp_path / f"settings_{lang}.json"
+        store = SettingsStore(path)
+        store.save(Settings(language=lang))
+        loaded = store.load()
+        assert loaded.language == lang
+

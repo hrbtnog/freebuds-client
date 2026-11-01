@@ -3,7 +3,7 @@
 [![CI](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml/badge.svg)](https://github.com/hrbtnog/freebuds-client/actions/workflows/ci.yml)
 [![Лицензия: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md) | [**Español**](README.es.md) | [**Русский**](README.ru.md) | [**简体中文**](README.zh-CN.md)
+[**English**](README.md) | [**Português (Brasil)**](README.pt-BR.md) | [**Español**](README.es.md) | [**Русский**](README.ru.md) | [**简体中文**](README.zh-CN.md) | [**Français**](README.fr.md) | [**Deutsch**](README.de.md) | [**日本語**](README.ja.md)
 
 > ⚠️ **Примечание:** Этот перевод был выполнен с помощью искусственного интеллекта (ИИ) и может содержать ошибки или неточности. Оригинальная документация доступна на [английском](README.md) и [португальском](README.pt-BR.md) языках.
 

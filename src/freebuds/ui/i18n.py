@@ -19,6 +19,9 @@ SUPPORTED_LANGUAGES: tuple[tuple[str, str], ...] = (
     ("es", "Español"),
     ("ru", "Русский"),
     ("zh", "简体中文"),
+    ("fr", "Français"),
+    ("de", "Deutsch"),
+    ("ja", "日本語"),
 )
 _LANGUAGE_CODES = {code for code, _ in SUPPORTED_LANGUAGES}
 
