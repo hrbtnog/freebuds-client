@@ -16,6 +16,9 @@ DEFAULT_LANGUAGE = "pt"
 SUPPORTED_LANGUAGES: tuple[tuple[str, str], ...] = (
     ("pt", "Português"),
     ("en", "English"),
+    ("es", "Español"),
+    ("ru", "Русский"),
+    ("zh", "简体中文"),
 )
 _LANGUAGE_CODES = {code for code, _ in SUPPORTED_LANGUAGES}
 
@@ -74,7 +77,7 @@ _OPTION_KEYS: dict[str, dict[object, str]] = {
 
 
 def normalize_language(code: str | None) -> str:
-    """Aceita ``pt``, ``pt-BR``, ``en``, ``en-US`` e variações."""
+    """Aceita ``pt``, ``en``, ``es``, ``ru``, ``zh`` e variações (ex.: ``pt-BR``, ``zh-CN``)."""
 
     if not code:
         return DEFAULT_LANGUAGE
